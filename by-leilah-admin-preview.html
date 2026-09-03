@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>by Leïlah — Administration (aperçu)</title>
+<style>
+  :root{
+    color-scheme: light;
+    --ivory:#F7F3EC; --cream:#FBF8F3; --sand:#ECE3D5; --linen:#F1E9DD;
+    --nude:#E4D3C3; --taupe:#B9A88F; --mocha:#8B7358; --espresso:#4C3E32;
+    --ink:#211B15; --noir:#17120E; --rose:#C79A90; --rose-soft:#E9D6CF;
+    --label:0.24em;
+    --serif:"Cormorant Garamond","Cormorant",Georgia,"Times New Roman",serif;
+    --sans:"Jost",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --header-h:100px;
+    --ease:cubic-bezier(.22,1,.36,1);
+    --ease-ed:cubic-bezier(.16,1,.3,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--ivory); color:var(--ink); font-family:var(--sans);
+    font-size:16px; line-height:1.6; font-weight:400;
+    -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  }
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input,select,textarea{font-family:inherit}
+  svg{display:block}
+
+  .u-container{margin-inline:auto;width:100%;max-width:1400px;padding-inline:clamp(20px,5vw,48px)}
+  .serif{font-family:var(--serif)}
+
+  /* ============ HEADER (store chrome, consistent with other previews) ============ */
+  header{position:fixed;top:0;left:0;right:0;z-index:50}
+  .announce{background:var(--ink);color:var(--ivory);overflow:hidden;height:34px;display:flex;align-items:center}
+  .announce-track{display:flex;white-space:nowrap;animation:marquee 42s linear infinite;will-change:transform}
+  .announce-track span{display:inline-flex;align-items:center;font-size:10.5px;letter-spacing:.22em;
+    text-transform:uppercase;color:rgba(247,243,236,.85);padding-inline:2.2rem}
+  .announce-track span::after{content:"◆";margin-inline-start:2.2rem;font-size:6px;color:rgba(247,243,236,.4)}
+  @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .navbar{transition:background .5s var(--ease),border-color .5s var(--ease);
+    border-bottom:1px solid transparent;background:rgba(247,243,236,.85);backdrop-filter:blur(14px);
+    border-bottom-color:rgba(33,27,21,.08)}
+  .navbar-inner{display:flex;align-items:center;justify-content:space-between;height:66px;gap:1.5rem}
+  .logo{font-family:var(--serif);font-size:26px;line-height:1;white-space:nowrap}
+  .logo .by{font-style:italic;color:var(--mocha);letter-spacing:.02em;font-size:.62em;margin-inline-end:.14em}
+  .logo .name{font-weight:500;color:var(--ink)}
+  nav.primary{display:none;gap:1.6rem;align-items:center}
+  nav.primary a{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--espresso);
+    font-weight:400;position:relative;padding-block:4px;transition:color .3s}
+  nav.primary a:hover{color:var(--ink)}
+  .nav-actions{display:flex;align-items:center;gap:1rem}
+  .lang-static{font-size:11px;letter-spacing:.1em;color:var(--ink);font-weight:600}
+  .icon-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;color:var(--ink);position:relative;transition:opacity .3s}
+  .icon-btn:hover{opacity:.6}
+  .icon-btn svg{width:19px;height:19px}
+  @media(min-width:1080px){nav.primary{display:flex}}
+
+  /* ============ ADMIN ============ */
+  .admin{padding-top:var(--header-h)}
+  .a-shell{padding-block:34px 60px}
+  .a-head{display:flex;flex-direction:column;gap:12px;border-bottom:1px solid rgba(76,62,50,.12);padding-bottom:22px;margin-bottom:30px}
+  .a-title{font-family:var(--serif);font-weight:500;font-size:clamp(1.9rem,3.4vw,2.5rem);color:var(--ink);line-height:1.05}
+  .a-sub{font-size:12px;color:var(--mocha);margin-top:4px}
+  .a-back{display:inline-flex;align-items:center;gap:7px;font-size:11px;letter-spacing:var(--label);text-transform:uppercase;color:var(--mocha);transition:color .3s}
+  .a-back:hover{color:var(--ink)}
+  .a-back svg{width:14px;height:14px}
+  @media(min-width:640px){.a-head{flex-direction:row;align-items:flex-end;justify-content:space-between}}
+
+  .a-grid{display:block}
+  @media(min-width:1024px){.a-grid{display:grid;grid-template-columns:210px 1fr;gap:40px;align-items:start}}
+
+  /* nav */
+  .a-nav ul{list-style:none;display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+  .a-nav ul::-webkit-scrollbar{height:0}
+  @media(min-width:1024px){.a-nav{position:sticky;top:calc(var(--header-h) + 20px)}
+    .a-nav ul{flex-direction:column;gap:4px;overflow:visible;padding-bottom:0}}
+  .nav-item{display:flex;align-items:center;gap:10px;white-space:nowrap;width:100%;
+    padding:11px 14px;font-size:11px;letter-spacing:var(--label);text-transform:uppercase;
+    color:var(--mocha);transition:background .3s,color .3s}
+  .nav-item:hover{background:rgba(33,27,21,.05);color:var(--ink)}
+  .nav-item.active{background:var(--ink);color:var(--ivory)}
+  .nav-item svg{width:16px;height:16px;flex:none}
+  .nav-badge{margin-inline-start:auto;display:inline-flex;align-items:center;justify-content:center;
+    height:19px;min-width:19px;padding:0 5px;border-radius:999px;font-size:10px;background:rgba(199,154,144,.18);color:var(--rose)}
+  .nav-item.active .nav-badge{background:var(--ivory);color:var(--ink)}
+
+  .content{min-width:0}
+  .sec-title{font-size:11px;letter-spacing:var(--label);text-transform:uppercase;color:var(--mocha);margin:38px 0 16px}
+
+  /* stat cards */
+  .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(min-width:1024px){.stat-grid{grid-template-columns:repeat(4,1fr)}}
+  .stat-card{border:1px solid rgba(76,62,50,.12);background:var(--cream);padding:18px 18px 20px}
+  .stat-card svg{width:20px;height:20px;color:var(--mocha)}
+  .stat-val{font-family:var(--serif);font-size:clamp(1.5rem,2.6vw,1.9rem);color:var(--ink);margin-top:12px;line-height:1}
+  .stat-lbl{font-size:10.5px;letter-spacing:var(--label);text-transform:uppercase;color:var(--mocha);margin-top:7px}
+
+  /* orders */
+  .o-list{display:flex;flex-direction:column;gap:8px}
+  .order-row{border:1px solid rgba(76,62,50,.12);background:var(--cream)}
+  .order-head{display:flex;flex-wrap:wrap;align-items:center;gap:9px 14px;padding:13px 16px;width:100%;text-align:start}
+  .o-id{flex:none;font-family:var(--sans);font-size:13px;color:var(--ink);letter-spacing:.02em}
+  .o-cust{flex:1 1 190px;min-width:0}
+  .o-cust .nm{font-size:13.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .o-cust .mt{font-size:11px;color:var(--mocha);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .o-total{flex:none;font-size:13.5px;color:var(--ink);margin-inline-start:auto}
+  .o-tags{flex:none;display:flex;align-items:center;gap:8px}
+  .chev{flex:none;color:var(--mocha);transition:transform .35s var(--ease)}
+  .chev svg{width:16px;height:16px}
+  .chev.open{transform:rotate(180deg)}
+
+  .pill{display:inline-flex;align-items:center;white-space:nowrap;border-radius:999px;padding:4px 10px;
+    font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+  .pill-neutral{background:var(--sand);color:var(--mocha)}
+  .pill-positive{background:rgba(76,62,50,.10);color:var(--espresso)}
+  .pill-negative{background:rgba(199,154,144,.14);color:#B06A5E}
+  .pill-warn{background:rgba(180,138,60,.14);color:#9a6f24}
+
+  .order-body{border-top:1px solid rgba(76,62,50,.12);background:rgba(251,248,243,.6);padding:16px}
+  .o-items{list-style:none;display:flex;flex-direction:column;gap:8px}
+  .o-items li{display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:13.5px}
+  .o-items .it-name{color:var(--ink)}
+  .o-items .it-meta{color:var(--mocha)}
+  .o-items .it-price{color:var(--mocha);white-space:nowrap}
+  .o-tot{display:flex;flex-wrap:wrap;gap:6px 30px;border-top:1px solid rgba(76,62,50,.1);margin-top:13px;padding-top:13px;font-size:12px;color:var(--mocha)}
+  .o-tot b{color:var(--ink);font-weight:400}
+  .o-note{margin-top:13px;font-size:12px;color:var(--mocha);font-style:italic}
+  .o-proof{margin-top:15px;border:1px solid rgba(76,62,50,.12);background:var(--cream);padding:12px 13px}
+  .o-proof .plab{font-size:10px;letter-spacing:var(--label);text-transform:uppercase;color:var(--mocha)}
+  .o-proof .pfile{display:flex;align-items:center;gap:8px;margin-top:7px;font-size:13.5px;color:var(--ink)}
+  .o-proof .pfile svg{width:16px;height:16px;color:var(--mocha);flex:none}
+  .o-proof .pfile .sz{font-size:12px;color:var(--mocha)}
+  .o-proof .pref{margin-top:5px;font-size:12px;color:var(--mocha)}
+  .o-proof .pref b{color:var(--ink);font-weight:400}
+  .o-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:16px}
+  .o-actions label{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--mocha)}
+  .sel{border:1px solid rgba(76,62,50,.2);background:var(--cream);padding:8px 11px;font-size:13px;color:var(--ink)}
+  .sel:focus{outline:none;border-color:var(--espresso)}
+  .act-grp{display:flex;gap:8px}
+  .btn-verify{display:inline-flex;align-items:center;gap:6px;background:var(--ink);color:var(--ivory);
+    padding:9px 16px;font-size:11px;letter-spacing:var(--label);text-transform:uppercase;transition:background .3s}
+  .btn-verify:hover{background:var(--noir)}
+  .btn-verify:disabled{opacity:.4;cursor:not-allowed}
+  .btn-verify svg{width:14px;height:14px}
+  .btn-reject{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(199,154,144,.5);color:#B06A5E;
+    padding:9px 16px;font-size:11px;letter-spacing:var(--label);text-transform:uppercase;transition:background .3s}
+  .btn-reject:hover{background:rgba(199,154,144,.1)}
+  .btn-reject:disabled{opacity:.4;cursor:not-allowed}
+  .btn-reject svg{width:14px;height:14px}
+
+  /* orders toolbar */
+  .o-toolbar{display:flex;flex-direction:column;gap:12px;margin-bottom:18px}
+  @media(min-width:640px){.o-toolbar{flex-direction:row;align-items:center}}
+  .search-wrap{position:relative;flex:1}
+  .search-wrap svg{position:absolute;inset-inline-start:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--mocha);pointer-events:none}
+  .search-wrap input{width:100%;border:1px solid rgba(76,62,50,.2);background:var(--cream);
+    padding:10px 14px 10px 36px;font-size:13.5px;color:var(--ink)}
+  .search-wrap input::placeholder{color:rgba(139,115,88,.5)}
+  .search-wrap input:focus{outline:none;border-color:var(--espresso)}
+
+  .empty{display:flex;flex-direction:column;align-items:center;gap:12px;padding:64px 0;text-align:center}
+  .empty svg{width:32px;height:32px;color:rgba(76,62,50,.4)}
+  .empty p{font-size:13.5px;color:var(--mocha)}
+
+  .intro{font-size:13.5px;line-height:1.7;color:var(--mocha);margin-bottom:18px;max-width:60ch}
+
+  /* tables */
+  .tbl-wrap{overflow-x:auto}
+  table.tbl{width:100%;border-collapse:collapse;font-size:13.5px;min-width:520px}
+  table.tbl th{text-align:start;font-weight:400;font-size:10px;letter-spacing:var(--label);
+    text-transform:uppercase;color:var(--mocha);padding:12px 16px 12px 0;border-bottom:1px solid rgba(76,62,50,.15)}
+  table.tbl td{padding:12px 16px 12px 0;border-bottom:1px solid rgba(76,62,50,.08)}
+  table.tbl td.end,table.tbl th.end{text-align:end;padding-inline-end:0}
+  .p-name{font-family:var(--serif);font-size:1.05rem;color:var(--ink)}
+  .p-slug{margin-inline-start:8px;font-size:11px;color:var(--mocha)}
+  .num-input{width:96px;border:1px solid rgba(76,62,50,.2);background:var(--cream);padding:6px 10px;font-size:13px;color:var(--ink)}
+  .num-input.stk{width:74px}
+  .num-input.low{border-color:rgba(199,154,144,.5)}
+  .num-input:focus{outline:none;border-color:var(--espresso)}
+
+  /* inventory */
+  .inv-list{display:flex;flex-direction:column;gap:8px}
+  .inv-row{display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid rgba(76,62,50,.12);background:var(--cream);padding:12px 16px}
+  .inv-row .nm{font-family:var(--serif);font-size:1.05rem;color:var(--ink)}
+  .inv-row .ct{font-size:11px;color:var(--mocha)}
+  .inv-right{display:flex;align-items:center;gap:12px}
+  .low-tag{display:inline-flex;align-items:center;gap:5px;font-size:10px;letter-spacing:var(--label);text-transform:uppercase;color:#B06A5E}
+  .low-tag svg{width:14px;height:14px}
+
+  /* settings */
+  .settings{max-width:640px;display:flex;flex-direction:column;gap:26px}
+  .set-block{border:1px solid rgba(76,62,50,.12);background:var(--cream);padding:22px}
+  .set-block h2{font-family:var(--serif);font-size:1.25rem;color:var(--ink);margin-bottom:16px}
+  .set-row{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 16px;
+    border-bottom:1px solid rgba(76,62,50,.08);padding-bottom:10px;margin-bottom:10px}
+  .set-row:last-child{border:0;padding:0;margin:0}
+  .set-row dt{font-size:10.5px;letter-spacing:var(--label);text-transform:uppercase;color:var(--mocha)}
+  .set-row dd{font-size:13.5px;color:var(--ink)}
+  .mock-note{margin-top:26px;font-size:11px;line-height:1.7;color:rgba(139,115,88,.85)}
+  .sec-mock{margin-top:22px}
+
+  /* footer */
+  footer.pf{border-top:1px solid rgba(76,62,50,.12);background:var(--cream);padding:24px 0;margin-top:20px}
+  footer.pf .u-container{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between}
+  footer.pf .fl{font-family:var(--serif);font-size:20px;color:var(--ink)}
+  footer.pf .fr{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mocha)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="announce">
+    <div class="announce-track" id="marq"></div>
+  </div>
+  <div class="navbar">
+    <div class="u-container">
+      <div class="navbar-inner">
+        <a class="logo" href="#"><span class="by">by</span><span class="name">Leïlah</span></a>
+        <nav class="primary">
+          <a href="#">Pyjamas</a>
+          <a href="#">Vêtements</a>
+          <a href="#">Chaussures</a>
+          <a href="#">Looks complets</a>
+          <a href="#">Sacs</a>
+        </nav>
+        <div class="nav-actions">
+          <span class="lang-static">Français</span>
+          <button class="icon-btn" aria-label="Rechercher" data-ic="search"></button>
+          <button class="icon-btn" aria-label="Favoris" data-ic="heart"></button>
+          <button class="icon-btn" aria-label="Panier" data-ic="bag"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="admin">
+  <div class="u-container a-shell">
+    <div class="a-head">
+      <div>
+        <h1 class="a-title">Administration</h1>
+        <p class="a-sub">by Leïlah · Espace de gestion (démo)</p>
+      </div>
+      <a class="a-back" href="#" data-ic="arrow"><span data-slot="arrow"></span>Retour à la boutique</a>
+    </div>
+
+    <div class="a-grid">
+      <nav class="a-nav">
+        <ul id="nav"></ul>
+      </nav>
+      <div class="content" id="content"></div>
+    </div>
+  </div>
+
+  <footer class="pf">
+    <div class="u-container">
+      <span class="fl"><span style="font-style:italic;color:var(--mocha);font-size:.62em;">by</span> Leïlah</span>
+      <span class="fr">Aperçu statique · Administration</span>
+    </div>
+  </footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- icons (lucide-style) ----------
+  var P = {
+    dashboard:'<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>',
+    bag:'<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>',
+    shield:'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1Z"/><path d="m9 12 2 2 4-4"/>',
+    package:'<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>',
+    boxes:'<path d="M2.97 12.92A2 2 0 0 0 2 14.63v3.24a2 2 0 0 0 .97 1.71l3 1.8a2 2 0 0 0 2.06 0L12 19V13.5l-5-3-4.03 2.42Z"/><path d="m7 16.5-4.74-2.85"/><path d="m7 16.5 5-3"/><path d="M7 16.5v5.17"/><path d="M12 13.5V19l3.97 2.38a2 2 0 0 0 2.06 0l3-1.8a2 2 0 0 0 .97-1.71v-3.24a2 2 0 0 0-.97-1.71L17 10.5l-5 3Z"/><path d="m17 16.5-5-3"/><path d="m17 16.5 4.74-2.85"/><path d="M17 16.5v5.17"/><path d="M7.97 4.42A2 2 0 0 0 7 6.13v4.37l5 3 5-3V6.13a2 2 0 0 0-.97-1.71l-3-1.8a2 2 0 0 0-2.06 0Z"/><path d="M12 8 7.26 5.15"/><path d="m12 8 4.74-2.85"/><path d="M12 13.5V8"/>',
+    users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    settings:'<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2Z"/><circle cx="12" cy="12" r="3"/>',
+    chevron:'<path d="m6 9 6 6 6-6"/>',
+    check:'<path d="M20 6 9 17l-5-5"/>',
+    x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+    file:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>',
+    search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+    arrow:'<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>',
+    trending:'<path d="M16 7h6v6"/><path d="m22 7-8.5 8.5-5-5L2 17"/>',
+    clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+    alert:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+    heart:'<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/>'
+  };
+  function ico(name){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'+(P[name]||'')+'</svg>';
+  }
+
+  // ---------- i18n (FR, verbatim from translations.ts) ----------
+  var T = {
+    'admin.dashboard':'Tableau de bord','admin.orders':'Commandes','admin.payments':'Vérification des paiements',
+    'admin.products':'Produits','admin.inventory':'Stock','admin.customers':'Clientes','admin.settings':'Réglages',
+    'admin.revenue':'Chiffre d’affaires','admin.ordersCount':'Commandes','admin.pendingPayments':'Paiements à vérifier',
+    'admin.avgOrder':'Panier moyen','admin.recentOrders':'Commandes récentes','admin.markVerified':'Marquer comme vérifié',
+    'admin.markRejected':'Refuser','admin.changeStatus':'Changer le statut','admin.deliveryFees':'Frais de livraison',
+    'admin.customer':'Cliente','admin.total':'Total','admin.proof':'Preuve','admin.reference':'Référence',
+    'admin.noProof':'Aucune preuve','admin.stock':'Stock','admin.price':'Prix','admin.product':'Produit',
+    'admin.category':'Catégorie','admin.all':'Tous','admin.search':'Rechercher','admin.backToStore':'Retour à la boutique',
+    'admin.lowStock':'Stock faible','admin.verifyIntro':'Vérifiez manuellement chaque preuve BaridiMob avant de valider la commande.',
+    'admin.noPending':'Aucun paiement en attente de vérification.',
+    'admin.mockNote':'Données de démonstration — à connecter à un backend (Supabase / Firebase).',
+    'payment.cod':'Paiement à la livraison','payment.baridimob':'BaridiMob',
+    'paymentStatus.pending':'En attente','paymentStatus.verification_required':'Vérification requise',
+    'paymentStatus.verified':'Vérifié','paymentStatus.rejected':'Refusé',
+    'status.pending':'En attente','status.confirmed':'Confirmée','status.preparing':'En préparation',
+    'status.shipped':'Expédiée','status.delivered':'Livrée','status.cancelled':'Annulée',
+    'order.subtotal':'Sous-total','order.delivery':'Livraison','order.total':'Total','common.free':'Offerte',
+    'checkout.phone':'Téléphone','checkout.wilaya':'Wilaya','checkout.homeDelivery':'Livraison à domicile',
+    'footer.contact':'Contact','proof.title':'Preuve de paiement','shop.empty':'Aucun produit ne correspond',
+    'baridi.storeName':'Nom du magasin','baridi.paymentInfo':'Informations de paiement','baridi.account':'Compte / RIP',
+    'baridi.phone':'Téléphone','cta.freeShippingReached':'Vous bénéficiez de la livraison offerte.',
+    'nav.pajamas':'Pyjamas','nav.clothing':'Vêtements','nav.shoes':'Chaussures','nav.completeLooks':'Looks complets','nav.handbags':'Sacs'
+  };
+  function t(k){ return T[k] !== undefined ? T[k] : k; }
+
+  var ORDER_STATUSES = ['pending','confirmed','preparing','shipped','delivered','cancelled'];
+
+  // ---------- store config (config/store.ts — placeholders verbatim) ----------
+  var STORE = { name:'by Leïlah', legalName:'[STORE NAME]', phone:'[STORE PHONE NUMBER]',
+    email:'[STORE EMAIL]', city:'Alger', country:'Algérie' };
+  var BARIDIMOB = { storeName:'[STORE NAME]', paymentInformation:'[BARIDIMOB PAYMENT INFORMATION]',
+    accountInformation:'[PAYMENT ACCOUNT INFORMATION]', phone:'[STORE PHONE NUMBER]' };
+  var PROOF_EXT = ['JPG','PNG','WEBP','PDF'];
+  var DEFAULT_HOME_FEE = 600, FREE_DELIVERY_THRESHOLD = 25000;
+
+  // ---------- catalogue (data/products.ts) ----------
+  var CAT = { pajamas:'nav.pajamas', clothing:'nav.clothing', shoes:'nav.shoes', 'complete-looks':'nav.completeLooks', handbags:'nav.handbags' };
+  var PRODUCTS = [
+    {id:'bl-001',name:'Satin Signature Pyjama',slug:'satin-signature-pajama',cat:'pajamas',price:12900,stock:24},
+    {id:'bl-002',name:'Nuit de Soie',slug:'nuit-de-soie-long-set',cat:'pajamas',price:14900,stock:12},
+    {id:'bl-003',name:'Aube Coton',slug:'aube-cotton-pajama',cat:'pajamas',price:8900,stock:30},
+    {id:'bl-004',name:'Douceur',slug:'douceur-short-set',cat:'pajamas',price:9900,stock:18},
+    {id:'bl-005',name:'Câline',slug:'caline-lounge-set',cat:'pajamas',price:10900,stock:20},
+    {id:'bl-006',name:'Rêverie',slug:'reverie-silk-robe',cat:'pajamas',price:13900,stock:6},
+    {id:'bl-007',name:'Brise',slug:'brise-modal-short-set',cat:'pajamas',price:7900,stock:15},
+    {id:'bl-008',name:'Étoile Coffret',slug:'etoile-gift-set',cat:'pajamas',price:16900,stock:10},
+    {id:'bl-009',name:'Velours',slug:'velours-lounge-pants',cat:'pajamas',price:6900,stock:26},
+    {id:'bl-010',name:'Songe',slug:'songe-satin-camisole',cat:'pajamas',price:5900,stock:28},
+    {id:'bl-011',name:'Lune',slug:'lune-long-pajama',cat:'pajamas',price:10900,stock:0},
+    {id:'bl-012',name:'Maison Slip Dress',slug:'maison-slip-dress',cat:'clothing',price:13900,stock:14},
+    {id:'bl-013',name:'Colette',slug:'colette-knit-top',cat:'clothing',price:6900,stock:25},
+    {id:'bl-014',name:'Azur',slug:'azur-midi-skirt',cat:'clothing',price:9900,stock:16},
+    {id:'bl-015',name:'Lija',slug:'lija-wide-trousers',cat:'clothing',price:11900,stock:18},
+    {id:'bl-016',name:'Duo',slug:'duo-tailored-set',cat:'clothing',price:18900,stock:7},
+    {id:'bl-017',name:'Rosée',slug:'rosee-wrap-dress',cat:'clothing',price:15900,stock:11},
+    {id:'bl-018',name:'Brume',slug:'brume-silk-blouse',cat:'clothing',price:8900,stock:20},
+    {id:'bl-019',name:'Sillage',slug:'sillage-pleated-skirt',cat:'clothing',price:10900,stock:13},
+    {id:'bl-020',name:'Ligne',slug:'ligne-cropped-pants',cat:'clothing',price:9900,stock:22},
+    {id:'bl-021',name:'Naïla',slug:'naila-leather-sandals',cat:'shoes',price:11900,stock:15},
+    {id:'bl-022',name:'Alto',slug:'alto-heeled-mule',cat:'shoes',price:13900,stock:10},
+    {id:'bl-023',name:'Pétale',slug:'petale-ballet-flat',cat:'shoes',price:9900,stock:20},
+    {id:'bl-024',name:'Course',slug:'course-minimal-sneaker',cat:'shoes',price:12900,stock:18},
+    {id:'bl-025',name:'Rive',slug:'rive-strappy-heel',cat:'shoes',price:14900,stock:6},
+    {id:'bl-026',name:'Sable',slug:'sable-slide-sandal',cat:'shoes',price:8900,stock:14},
+    {id:'bl-027',name:'Leïla Tote',slug:'leila-structured-tote',cat:'handbags',price:19900,stock:12},
+    {id:'bl-028',name:'Ondine',slug:'ondine-shoulder-bag',cat:'handbags',price:16900,stock:9},
+    {id:'bl-029',name:'Mina',slug:'mina-mini-bag',cat:'handbags',price:12900,stock:15},
+    {id:'bl-030',name:'Soirée',slug:'soiree-clutch',cat:'handbags',price:9900,stock:8},
+    {id:'bl-031',name:'Jour',slug:'jour-everyday-tote',cat:'handbags',price:14900,stock:11},
+    {id:'bl-032',name:'Écru',slug:'ecru-crescent-bag',cat:'handbags',price:15900,stock:10},
+    {id:'bl-033',name:'Nomade',slug:'nomade-bucket-bag',cat:'handbags',price:13900,stock:13}
+  ];
+
+  // ---------- mock orders (data/mockOrders.ts, verbatim) ----------
+  var ORDERS = [
+    {id:'BL-7QK2M',createdAt:'2026-08-23T09:14:00.000Z',
+     customer:{firstName:'Amel',lastName:'Benali',phone:'0555 21 34 08',wilaya:'Alger',commune:'Hydra',notes:'Livraison en après-midi de préférence.'},
+     items:[{name:'Rêverie',colorLabel:'Champagne',size:'M',quantity:1,price:16900},{name:'Pétale',colorLabel:'Rose poudré',size:'38',quantity:1,price:9900}],
+     subtotal:26800,deliveryFee:0,total:26800,paymentMethod:'baridimob',paymentStatus:'verification_required',orderStatus:'pending',
+     paymentProof:{fileName:'baridimob-recu.jpg',fileSize:842113},paymentReference:'BM-88213409'},
+    {id:'BL-3XR9T',createdAt:'2026-08-22T17:42:00.000Z',
+     customer:{firstName:'Lina',lastName:'Haddad',phone:'0661 90 12 77',wilaya:'Oran',commune:'Bir El Djir',notes:''},
+     items:[{name:'Maison Slip Dress',colorLabel:'Espresso',size:'S',quantity:1,price:14900}],
+     subtotal:14900,deliveryFee:550,total:15450,paymentMethod:'cod',paymentStatus:'pending',orderStatus:'confirmed',
+     paymentProof:null,paymentReference:''},
+    {id:'BL-5MB1D',createdAt:'2026-08-21T11:05:00.000Z',
+     customer:{firstName:'Sara',lastName:'Cherif',phone:'0770 45 66 21',wilaya:'Constantine',commune:'El Khroub',notes:''},
+     items:[{name:'Leïla Tote',colorLabel:'Camel',size:'Unique',quantity:1,price:19900},{name:'Colette',colorLabel:'Ivoire',size:'M',quantity:2,price:7900}],
+     subtotal:35700,deliveryFee:0,total:35700,paymentMethod:'baridimob',paymentStatus:'verified',orderStatus:'preparing',
+     paymentProof:{fileName:'capture-paiement.png',fileSize:512900},paymentReference:'BM-77120945'},
+    {id:'BL-9WHK4',createdAt:'2026-08-19T15:20:00.000Z',
+     customer:{firstName:'Yasmine',lastName:'Meziane',phone:'0540 33 89 14',wilaya:'Blida',commune:'Boufarik',notes:''},
+     items:[{name:'Naïla',colorLabel:'Noir',size:'39',quantity:1,price:11900}],
+     subtotal:11900,deliveryFee:450,total:12350,paymentMethod:'cod',paymentStatus:'pending',orderStatus:'shipped',
+     paymentProof:null,paymentReference:''},
+    {id:'BL-2FDP6',createdAt:'2026-08-16T08:48:00.000Z',
+     customer:{firstName:'Nour',lastName:'Belkacem',phone:'0559 74 20 03',wilaya:'Béjaïa',commune:'Akbou',notes:''},
+     items:[{name:'Rêverie',colorLabel:'Rose poudré',size:'L',quantity:1,price:13900},{name:'Soirée',colorLabel:'Champagne',size:'Unique',quantity:1,price:9900}],
+     subtotal:23800,deliveryFee:550,total:24350,paymentMethod:'baridimob',paymentStatus:'verified',orderStatus:'delivered',
+     paymentProof:{fileName:'virement.pdf',fileSize:224100},paymentReference:'BM-55901238'}
+  ];
+
+  // ---------- state ----------
+  var state = { section:'dashboard', expanded:null, query:'', statusFilter:'all', overrides:{} };
+
+  // ---------- format helpers ----------
+  function grp(n){ return Math.round(n).toLocaleString('en-US'); }
+  function money(n){ return grp(n) + ' DA'; }
+  function fmtNum(n){ return grp(n); }
+  function fmtDate(iso){ try { return new Date(iso).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); } catch(e){ return iso; } }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  // ---------- derived ----------
+  function sortedOrders(){ return ORDERS.slice().sort(function(a,b){ return a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0; }); }
+  function stats(){
+    var active = ORDERS.filter(function(o){ return o.orderStatus !== 'cancelled'; });
+    var revenue = active.reduce(function(s,o){ return s + o.total; }, 0);
+    var pending = ORDERS.filter(function(o){ return o.paymentStatus === 'verification_required'; }).length;
+    var avg = active.length ? Math.round(revenue / active.length) : 0;
+    return { revenue:revenue, count:ORDERS.length, pending:pending, avg:avg };
+  }
+  function pendingPayments(){ return sortedOrders().filter(function(o){ return o.paymentStatus === 'verification_required'; }); }
+  function filteredOrders(){
+    var q = state.query.trim().toLowerCase();
+    return sortedOrders().filter(function(o){
+      if (state.statusFilter !== 'all' && o.orderStatus !== state.statusFilter) return false;
+      if (!q) return true;
+      var hay = (o.id + ' ' + o.customer.firstName + ' ' + o.customer.lastName + ' ' + o.customer.phone + ' ' + o.customer.wilaya).toLowerCase();
+      return hay.indexOf(q) !== -1;
+    });
+  }
+  function customers(){
+    var map = {}; var order = [];
+    ORDERS.forEach(function(o){
+      var k = o.customer.phone;
+      if (map[k]) { map[k].count += 1; map[k].total += o.total; }
+      else { map[k] = { name:o.customer.firstName+' '+o.customer.lastName, phone:o.customer.phone, wilaya:o.customer.wilaya, count:1, total:o.total }; order.push(k); }
+    });
+    return order.map(function(k){ return map[k]; }).sort(function(a,b){ return b.total - a.total; });
+  }
+  function ov(p){ var o = state.overrides[p.id]; return { price: o && o.price != null ? o.price : p.price, stock: o && o.stock != null ? o.stock : p.stock }; }
+  function patch(p, key, val){
+    var cur = state.overrides[p.id] || { price:p.price, stock:p.stock };
+    var v = isFinite(val) ? Math.max(0, val) : 0;
+    cur = { price: cur.price != null ? cur.price : p.price, stock: cur.stock != null ? cur.stock : p.stock };
+    cur[key] = v; state.overrides[p.id] = cur;
+  }
+
+  // ---------- pills ----------
+  function payTone(s){ return s === 'verified' ? 'positive' : s === 'rejected' ? 'negative' : s === 'verification_required' ? 'warn' : 'neutral'; }
+  function pill(label, tone){ return '<span class="pill pill-'+tone+'">'+esc(label)+'</span>'; }
+
+  // ---------- order row ----------
+  function orderRow(o, showActions){
+    var open = state.expanded === o.id;
+    var h = '';
+    h += '<div class="order-row" data-row="'+o.id+'">';
+    h +=   '<div class="order-head" data-act="toggle" data-id="'+o.id+'" role="button" tabindex="0">';
+    h +=     '<span class="o-id" dir="ltr">'+esc(o.id)+'</span>';
+    h +=     '<span class="o-cust"><span class="nm">'+esc(o.customer.firstName+' '+o.customer.lastName)+'</span>'
+                +'<span class="mt">'+esc(o.customer.commune+', '+o.customer.wilaya)+' · '+esc(fmtDate(o.createdAt))+'</span></span>';
+    h +=     '<span class="o-total">'+esc(money(o.total))+'</span>';
+    h +=     '<span class="o-tags">'
+                + pill(o.paymentMethod === 'cod' ? t('payment.cod') : t('payment.baridimob'), 'neutral')
+                + pill(t('paymentStatus.'+o.paymentStatus), payTone(o.paymentStatus))
+             +'</span>';
+    h +=     '<span class="chev'+(open?' open':'')+'">'+ico('chevron')+'</span>';
+    h +=   '</div>';
+
+    if (open){
+      h += '<div class="order-body">';
+      h +=   '<ul class="o-items">';
+      o.items.forEach(function(it){
+        h += '<li><span><span class="it-name">'+esc(it.name)+'</span> <span class="it-meta">· '+esc(it.colorLabel)+' · '+esc(it.size)+' · ×'+it.quantity+'</span></span>'
+             +'<span class="it-price">'+esc(money(it.price*it.quantity))+'</span></li>';
+      });
+      h +=   '</ul>';
+      h +=   '<div class="o-tot">'
+              +'<span>'+t('order.subtotal')+': <b>'+esc(money(o.subtotal))+'</b></span>'
+              +'<span>'+t('order.delivery')+': <b>'+(o.deliveryFee === 0 ? t('common.free') : esc(money(o.deliveryFee)))+'</b></span>'
+              +'<span>'+t('order.total')+': <b>'+esc(money(o.total))+'</b></span>'
+             +'</div>';
+      if (o.customer.notes){ h += '<p class="o-note">“'+esc(o.customer.notes)+'”</p>'; }
+
+      if (o.paymentMethod === 'baridimob'){
+        h += '<div class="o-proof"><p class="plab">'+t('admin.proof')+'</p>';
+        if (o.paymentProof){
+          h += '<p class="pfile">'+ico('file')+'<span class="fn" dir="ltr">'+esc(o.paymentProof.fileName)+'</span>'
+               +'<span class="sz">('+Math.round(o.paymentProof.fileSize/1024)+' KB)</span></p>';
+        } else {
+          h += '<p class="pfile" style="color:var(--mocha)">'+t('admin.noProof')+'</p>';
+        }
+        if (o.paymentReference){
+          h += '<p class="pref">'+t('admin.reference')+': <b dir="ltr">'+esc(o.paymentReference)+'</b></p>';
+        }
+        h += '</div>';
+      }
+
+      h += '<div class="o-actions">';
+      h +=   '<label>'+t('admin.changeStatus')
+              +'<select class="sel" data-act="status" data-id="'+o.id+'">'
+              + ORDER_STATUSES.map(function(s){ return '<option value="'+s+'"'+(o.orderStatus===s?' selected':'')+'>'+t('status.'+s)+'</option>'; }).join('')
+              +'</select></label>';
+      if (showActions && o.paymentMethod === 'baridimob'){
+        h += '<span class="act-grp">'
+             +'<button class="btn-verify" data-act="verify" data-id="'+o.id+'"'+(o.paymentStatus==='verified'?' disabled':'')+'>'+ico('check')+t('admin.markVerified')+'</button>'
+             +'<button class="btn-reject" data-act="reject" data-id="'+o.id+'"'+(o.paymentStatus==='rejected'?' disabled':'')+'>'+ico('x')+t('admin.markRejected')+'</button>'
+             +'</span>';
+      }
+      h += '</div>';
+      h += '</div>';
+    }
+    h += '</div>';
+    return h;
+  }
+
+  // ---------- sections ----------
+  function renderDashboard(){
+    var s = stats();
+    var cards = [
+      { label:t('admin.revenue'), value:money(s.revenue), icon:'trending' },
+      { label:t('admin.ordersCount'), value:fmtNum(s.count), icon:'bag' },
+      { label:t('admin.pendingPayments'), value:fmtNum(s.pending), icon:'clock' },
+      { label:t('admin.avgOrder'), value:money(s.avg), icon:'package' }
+    ];
+    var h = '<div class="stat-grid">';
+    cards.forEach(function(c){
+      h += '<div class="stat-card">'+ico(c.icon)+'<div class="stat-val serif">'+esc(c.value)+'</div><div class="stat-lbl">'+esc(c.label)+'</div></div>';
+    });
+    h += '</div>';
+    h += '<h2 class="sec-title">'+t('admin.recentOrders')+'</h2>';
+    h += '<div class="o-list">'+ sortedOrders().slice(0,5).map(function(o){ return orderRow(o, true); }).join('') +'</div>';
+    h += '<p class="mock-note">'+t('admin.mockNote')+'</p>';
+    return h;
+  }
+
+  function renderOrders(){
+    var h = '<div class="o-toolbar">';
+    h +=   '<div class="search-wrap">'+ico('search')+'<input id="oq" type="text" placeholder="'+t('admin.search')+'" value="'+esc(state.query)+'" /></div>';
+    h +=   '<select class="sel" id="ofilter"><option value="all"'+(state.statusFilter==='all'?' selected':'')+'>'+t('admin.all')+'</option>'
+            + ORDER_STATUSES.map(function(s){ return '<option value="'+s+'"'+(state.statusFilter===s?' selected':'')+'>'+t('status.'+s)+'</option>'; }).join('')
+            +'</select>';
+    h += '</div>';
+    h += '<div class="o-list" id="order-list">'+ renderOrderListInner() +'</div>';
+    return h;
+  }
+  function renderOrderListInner(){
+    var list = filteredOrders();
+    if (!list.length) return '<p class="empty"><span></span><span></span></p>'.replace('<p class="empty">','<div style="padding:56px 0;text-align:center;color:var(--mocha);font-size:13.5px;">'+t('shop.empty')+'</div><p style="display:none">');
+  }
+
+  function renderPayments(){
+    var list = pendingPayments();
+    var h = '<p class="intro">'+t('admin.verifyIntro')+'</p>';
+    if (list.length){
+      h += '<div class="o-list" id="pay-list">'+ list.map(function(o){ return orderRow(o, true); }).join('') +'</div>';
+    } else {
+      h += '<div class="empty">'+ico('shield')+'<p>'+t('admin.noPending')+'</p></div>';
+    }
+    return h;
+  }
+
+  function renderProducts(){
+    var h = '<div class="tbl-wrap"><table class="tbl"><thead><tr>'
+          + '<th>'+t('admin.product')+'</th><th>'+t('admin.category')+'</th><th>'+t('admin.price')+'</th><th>'+t('admin.stock')+'</th>'
+          + '</tr></thead><tbody>';
+    PRODUCTS.forEach(function(p){
+      var o = ov(p); var low = o.stock <= 4;
+      h += '<tr>'
+         +   '<td><span class="p-name">'+esc(p.name)+'</span><span class="p-slug" dir="ltr">'+esc(p.slug)+'</span></td>'
+         +   '<td style="color:var(--mocha)">'+t(CAT[p.cat])+'</td>'
+         +   '<td><input class="num-input" type="number" min="0" value="'+o.price+'" data-act="price" data-id="'+p.id+'" /></td>'
+         +   '<td><input class="num-input stk'+(low?' low':'')+'" type="number" min="0" value="'+o.stock+'" data-act="stock" data-id="'+p.id+'" /></td>'
+         + '</tr>';
+    });
+    h += '</tbody></table></div><p class="mock-note">'+t('admin.mockNote')+'</p>';
+    return h;
+  }
+
+  function renderInventory(){
+    var arr = PRODUCTS.slice().sort(function(a,b){ return ov(a).stock - ov(b).stock; });
+    var h = '<div class="inv-list">';
+    arr.forEach(function(p){
+      var o = ov(p); var low = o.stock <= 4;
+      h += '<div class="inv-row">'
+         +   '<div><p class="nm">'+esc(p.name)+'</p><p class="ct">'+t(CAT[p.cat])+'</p></div>'
+         +   '<div class="inv-right">'
+         +     (low ? '<span class="low-tag">'+ico('alert')+t('admin.lowStock')+'</span>' : '')
+         +     '<input class="num-input stk'+(low?' low':'')+'" type="number" min="0" value="'+o.stock+'" data-act="stock" data-id="'+p.id+'" />'
+         +   '</div>'
+         + '</div>';
+    });
+    h += '</div><p class="mock-note">'+t('admin.mockNote')+'</p>';
+    return h;
+  }
+
+  function renderCustomers(){
+    var list = customers();
+    var h = '<div class="tbl-wrap"><table class="tbl"><thead><tr>'
+          + '<th>'+t('admin.customer')+'</th><th>'+t('checkout.phone')+'</th><th>'+t('checkout.wilaya')+'</th><th>'+t('admin.orders')+'</th><th class="end">'+t('admin.total')+'</th>'
+          + '</tr></thead><tbody>';
+    list.forEach(function(c){
+      h += '<tr><td style="color:var(--ink)">'+esc(c.name)+'</td>'
+         + '<td style="color:var(--mocha)" dir="ltr">'+esc(c.phone)+'</td>'
+         + '<td style="color:var(--mocha)">'+esc(c.wilaya)+'</td>'
+         + '<td style="color:var(--mocha)">'+c.count+'</td>'
+         + '<td class="end" style="color:var(--ink)">'+esc(money(c.total))+'</td></tr>';
+    });
+    h += '</tbody></table></div>';
+    return h;
+  }
+
+  function setRow(label, value){
+    return '<div class="set-row"><dt>'+esc(label)+'</dt><dd dir="ltr">'+esc(value)+'</dd></div>';
+  }
+  function renderSettings(){
+    var h = '<div class="settings">';
+    h += '<section class="set-block"><h2>'+esc(STORE.name)+'</h2><dl>'
+       + setRow(t('admin.customer'), STORE.legalName)
+       + setRow(t('checkout.phone'), STORE.phone)
+       + setRow('Email', STORE.email)
+       + setRow(t('footer.contact'), STORE.city+', '+STORE.country)
+       + '</dl></section>';
+    h += '<section class="set-block"><h2>'+t('payment.baridimob')+'</h2><dl>'
+       + setRow(t('baridi.storeName'), BARIDIMOB.storeName)
+       + setRow(t('baridi.paymentInfo'), BARIDIMOB.paymentInformation)
+       + setRow(t('baridi.account'), BARIDIMOB.accountInformation)
+       + setRow(t('baridi.phone'), BARIDIMOB.phone)
+       + setRow(t('proof.title'), PROOF_EXT.join(', '))
+       + '</dl></section>';
+    h += '<section class="set-block"><h2>'+t('admin.deliveryFees')+'</h2><dl>'
+       + setRow(t('checkout.homeDelivery'), money(DEFAULT_HOME_FEE))
+       + setRow(t('cta.freeShippingReached'), money(FREE_DELIVERY_THRESHOLD))
+       + '</dl></section>';
+    h += '<p class="mock-note">'+t('admin.mockNote')+'</p>';
+    h += '</div>';
+    return h;
+  }
+
+  var SECTIONS = {
+    dashboard:renderDashboard, orders:renderOrders, payments:renderPayments,
+    products:renderProducts, inventory:renderInventory, customers:renderCustomers, settings:renderSettings
+  };
+
+  // ---------- nav ----------
+  var NAV = [
+    { key:'dashboard', icon:'dashboard' },
+    { key:'orders', icon:'bag' },
+    { key:'payments', icon:'shield' },
+    { key:'products', icon:'package' },
+    { key:'inventory', icon:'boxes' },
+    { key:'customers', icon:'users' },
+    { key:'settings', icon:'settings' }
+  ];
+  function renderNav(){
+    var s = stats();
+    var ul = document.getElementById('nav');
+    ul.innerHTML = NAV.map(function(item){
+      var active = state.section === item.key;
+      var badge = (item.key === 'payments' && s.pending > 0) ? '<span class="nav-badge">'+s.pending+'</span>' : '';
+      return '<li><button class="nav-item'+(active?' active':'')+'" data-nav="'+item.key+'">'+ico(item.icon)+t('admin.'+item.key)+badge+'</button></li>';
+    }).join('');
+  }
+
+  // ---------- paint ----------
+  function paint(){
+    renderNav();
+    document.getElementById('content').innerHTML = SECTIONS[state.section]();
+    if (state.section === 'orders'){
+      var q = document.getElementById('oq');
+      if (q){ q.addEventListener('input', function(){ state.query = q.value; repaintOrderList(); }); }
+      var f = document.getElementById('ofilter');
+      if (f){ f.addEventListener('change', function(){ state.statusFilter = f.value; repaintOrderList(); }); }
+    }
+  }
+  function repaintOrderList(){
+    var el = document.getElementById('order-list');
+    if (el) el.innerHTML = renderOrderListInner();
+  }
+
+  // ---------- events ----------
+  function onClick(e){
+    var nav = e.target.closest ? e.target.closest('[data-nav]') : null;
+    if (nav){ state.section = nav.getAttribute('data-nav'); state.expanded = null; paint(); return; }
+
+    var act = e.target.closest ? e.target.closest('[data-act]') : null;
+    if (!act) return;
+    var type = act.getAttribute('data-act');
+    var id = act.getAttribute('data-id');
+
+    if (type === 'toggle'){ state.expanded = (state.expanded === id) ? null : id; paint(); return; }
+    if (type === 'verify'){ setPay(id, 'verified'); setStatus(id, 'confirmed'); paint(); return; }
+    if (type === 'reject'){ setPay(id, 'rejected'); paint(); return; }
+  }
+  function onChange(e){
+    var act = e.target.closest ? e.target.closest('[data-act]') : null;
+    if (!act) return;
+    var type = act.getAttribute('data-act');
+    var id = act.getAttribute('data-id');
+    if (type === 'status'){ setStatus(id, act.value); paint(); }
+  }
+  function onInput(e){
+    var act = e.target.closest ? e.target.closest('[data-act]') : null;
+    if (!act) return;
+    var type = act.getAttribute('data-act');
+    if (type === 'stock' || type === 'price'){
+      var p = findProduct(act.getAttribute('data-id'));
+      if (!p) return;
+      patch(p, type, parseInt(act.value, 10));
+      if (type === 'stock'){
+        var low = ov(p).stock <= 4;
+        act.classList.toggle('low', low);
+      }
+    }
+  }
+  function findProduct(id){ for (var i=0;i<PRODUCTS.length;i++){ if (PRODUCTS[i].id === id) return PRODUCTS[i]; } return null; }
+  function findOrder(id){ for (var i=0;i<ORDERS.length;i++){ if (ORDERS[i].id === id) return ORDERS[i]; } return null; }
+  function setPay(id, s){ var o = findOrder(id); if (o) o.paymentStatus = s; }
+  function setStatus(id, s){ var o = findOrder(id); if (o) o.orderStatus = s; }
+
+  // ---------- init ----------
+  function initChrome(){
+    // announcement marquee (store copy — factual, drawn from site content)
+    var msgs = ['Livraison dans les 58 wilayas','Paiement à la livraison ou BaridiMob','Retours offerts sous 14 jours'];
+    var one = msgs.map(function(m){ return '<span>'+m+'</span>'; }).join('');
+    document.getElementById('marq').innerHTML = one + one;
+    // header icons
+    document.querySelectorAll('[data-ic]').forEach(function(el){
+      var name = el.getAttribute('data-ic');
+      if (el.hasAttribute('data-ic') && el.querySelector('[data-slot]') === null && el.getAttribute('data-slot') === null){}
+      var slot = el.querySelector('[data-slot]');
+      if (slot){ slot.innerHTML = ico(name); }
+      else if (el.classList.contains('icon-btn')){ el.innerHTML = ico(name); }
+      else { el.insertAdjacentHTML('afterbegin', ico(name)); }
+    });
+  }
+
+  document.getElementById('content').addEventListener('click', onClick);
+  document.getElementById('content').addEventListener('change', onChange);
+  document.getElementById('content').addEventListener('input', onInput);
+  document.getElementById('nav').addEventListener('click', onClick);
+
+  initChrome();
+  paint();
+})();
+</script>
+</body>
+</html>
