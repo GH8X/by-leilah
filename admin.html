@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>by Leïlah — Administration (aperçu)</title>
+<title>by Leïlah — Administration</title>
 <style>
   :root{
     color-scheme: light;
@@ -207,6 +207,141 @@
   footer.pf .u-container{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between}
   footer.pf .fl{font-family:var(--serif);font-size:20px;color:var(--ink)}
   footer.pf .fr{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mocha)}
+
+  /* ---------- generic admin additions (stock / video / modals) ---------- */
+  .sect{display:flex;flex-direction:column;gap:22px}
+  .toolbar{display:flex;flex-direction:column;gap:12px}
+  @media(min-width:760px){.toolbar{flex-direction:row;align-items:center;flex-wrap:wrap}}
+  .toolbar .spacer{flex:1}
+  .toolbar .search-wrap{flex:1 1 220px;max-width:340px}
+  .select-sm{border:1px solid rgba(76,62,50,.2);background:var(--cream);padding:9px 12px;font-size:13px;color:var(--ink)}
+  .select-sm:focus{outline:none;border-color:var(--espresso)}
+
+  .btn-x{display:inline-flex;align-items:center;gap:6px;background:var(--ink);color:var(--ivory);padding:10px 18px;
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;transition:background .3s}
+  .btn-x:hover{background:var(--noir)}
+  .btn-x svg{width:13px;height:13px}
+  .btn-x.ghost{background:transparent;border:1px solid rgba(76,62,50,.3);color:var(--espresso)}
+  .btn-x.ghost:hover{background:rgba(33,27,21,.06)}
+  .btn-x.danger{background:transparent;border:1px solid rgba(199,154,144,.6);color:#B06A5E}
+  .btn-x.danger:hover{background:rgba(199,154,144,.1)}
+  .btn-x.sm{padding:7px 12px;font-size:10px}
+  .btn-x:disabled{opacity:.45;cursor:not-allowed}
+
+  /* product management table */
+  .p-thumb{position:relative;width:44px;height:56px;border-radius:2px;overflow:hidden;background:var(--linen);flex:none}
+  .p-thumb .ph{position:absolute;inset:0}
+  .p-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .prod-cell{display:flex;align-items:center;gap:12px;min-width:200px}
+  .prod-cell .meta{min-width:0}
+  .prod-cell .p-name{white-space:normal}
+  .stk-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+  .stk-chip{font-size:10.5px;color:var(--espresso);background:rgba(236,227,213,.55);border:1px solid rgba(76,62,50,.12);
+    padding:2px 7px;border-radius:999px;white-space:nowrap}
+  .stk-chip.zero{color:rgba(176,106,94,.9);border-color:rgba(199,154,144,.4);background:rgba(199,154,144,.07)}
+  .stk-total{font-weight:500;color:var(--ink);margin-inline-end:2px}
+  .old-price{color:var(--taupe);text-decoration:line-through;font-size:.82em;margin-inline-start:5px}
+  .row-actions{display:flex;gap:6px;flex-wrap:wrap}
+  .price-num{font-size:13px;color:var(--ink);white-space:nowrap}
+
+  /* pills small */
+  .pill-sub{background:var(--sand);color:var(--espresso)}
+  .pill-out{background:rgba(199,154,144,.14);color:#B06A5E}
+
+  /* dashboard tiles */
+  .stat-grid.six{grid-template-columns:repeat(2,1fr)}
+  @media(min-width:760px){.stat-grid.six{grid-template-columns:repeat(3,1fr)}}
+  @media(min-width:1180px){.stat-grid.six{grid-template-columns:repeat(6,1fr)}}
+
+  /* low stock list */
+  .mini-list{display:flex;flex-direction:column;gap:6px}
+  .mini-row{display:flex;align-items:center;gap:12px;border:1px solid rgba(76,62,50,.1);background:var(--cream);padding:10px 14px}
+  .mini-row .nm{flex:1;min-width:0;font-size:13px;color:var(--ink)}
+  .mini-row .q{font-size:12px;color:#B06A5E;white-space:nowrap}
+
+  /* ===== modals ===== */
+  .modal-root{position:fixed;inset:0;z-index:120;background:rgba(23,18,14,.55);backdrop-filter:blur(3px);
+    display:flex;align-items:flex-start;justify-content:center;padding:4vh 16px;overflow-y:auto}
+  .modal-root[hidden]{display:none}
+  .modal{background:var(--ivory);width:100%;max-width:760px;border-radius:3px;box-shadow:0 40px 120px -30px rgba(0,0,0,.5)}
+  .modal.sm{max-width:460px}
+  .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:20px 24px;border-bottom:1px solid rgba(76,62,50,.12)}
+  .modal-head h3{font-family:var(--serif);font-size:1.45rem;font-weight:500;color:var(--ink);line-height:1.1}
+  .modal-head .sub{font-size:11.5px;color:var(--mocha);margin-top:3px}
+  .modal-x{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--mocha);flex:none;transition:background .3s}
+  .modal-x:hover{background:rgba(33,27,21,.07);color:var(--ink)}
+  .modal-x svg{width:16px;height:16px}
+  .modal-body{padding:22px 24px;display:flex;flex-direction:column;gap:18px}
+  .modal-foot{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padding:16px 24px;border-top:1px solid rgba(76,62,50,.12)}
+  .f-grid{display:grid;grid-template-columns:1fr;gap:14px}
+  @media(min-width:640px){.f-grid.two{grid-template-columns:1fr 1fr}}
+  .f-grid.two .col2{grid-column:1/-1}
+  .fld{display:flex;flex-direction:column;gap:5px}
+  .fld .lbl{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--mocha)}
+  .fld .inp{width:100%;border:1px solid rgba(76,62,50,.22);background:var(--cream);padding:9px 12px;font-size:13.5px;color:var(--ink)}
+  .fld .inp:focus{outline:none;border-color:var(--espresso)}
+  .fld textarea.inp{resize:vertical;min-height:78px}
+  .fld .hint{font-size:11px;color:var(--taupe)}
+  .list-ed{margin-top:2px;display:flex;flex-direction:column}
+  .row-ed{display:grid;grid-template-columns:1fr;gap:8px;align-items:center;padding:9px 0;border-bottom:1px dashed rgba(76,62,50,.12)}
+  @media(min-width:560px){.row-ed{grid-template-columns:2.2fr 1fr auto;gap:10px}}
+  .row-ed .del{width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--mocha);border-radius:50%}
+  .row-ed .del:hover{background:rgba(199,154,144,.14);color:#B06A5E}
+  .row-ed .del svg{width:14px;height:14px}
+  .mini-inp{width:100%;border:1px solid rgba(76,62,50,.2);background:var(--cream);padding:7px 10px;font-size:13px;color:var(--ink)}
+  .mini-inp:focus{outline:none;border-color:var(--espresso)}
+  .add-line{display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mocha)}
+  .add-line:hover{color:var(--ink)}
+  .add-line svg{width:14px;height:14px}
+  .color-pair{display:flex;gap:8px;align-items:center}
+  .color-pair input[type=color]{width:38px;height:36px;border:1px solid rgba(76,62,50,.2);background:var(--cream);padding:2px;cursor:pointer}
+  .chk-row{display:flex;gap:10px;align-items:flex-start}
+  .chk-row input{width:17px;height:17px;margin-top:3px;accent-color:var(--ink)}
+  .chk-row .tt{font-size:13px;color:var(--ink)}
+  .chk-row .dd{font-size:11.5px;color:var(--mocha)}
+  .modal-err{font-size:12px;color:#B06A5E;line-height:1.5}
+  .modal-ok{font-size:12.5px;color:var(--espresso)}
+
+  /* ===== PIN screen ===== */
+  .pin-screen{position:fixed;inset:0;z-index:150;background:var(--ivory);display:flex;align-items:center;justify-content:center;padding:22px}
+  .pin-screen[hidden]{display:none}
+  .pin-card{max-width:420px;width:100%;text-align:center}
+  .pin-logo{font-family:var(--serif);font-size:30px;color:var(--ink)}
+  .pin-logo .by{font-style:italic;color:var(--mocha);font-size:.62em;margin-inline-end:.12em}
+  .pin-card h1{font-family:var(--serif);font-weight:500;font-size:1.7rem;color:var(--ink);margin-top:14px}
+  .pin-card p{font-size:13px;color:var(--mocha);margin-top:8px;line-height:1.6}
+  .pin-form{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+  .pin-form input{border:1px solid rgba(76,62,50,.25);background:var(--cream);padding:13px 16px;font-size:14px;color:var(--ink);text-align:center;letter-spacing:.2em}
+  .pin-form input:focus{outline:none;border-color:var(--espresso)}
+  .pin-form button{justify-content:center;width:100%;background:var(--ink);color:var(--ivory);padding:13px;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;transition:background .3s}
+  .pin-form button:hover{background:var(--noir)}
+  .pin-err{color:#B06A5E;font-size:12px;min-height:16px;margin-top:8px}
+  .pin-hint{font-size:11px;color:var(--taupe);margin-top:14px}
+  .pin-hint b{color:var(--mocha);font-weight:500}
+
+  /* ===== hero video manager ===== */
+  .video-box{border:1px solid rgba(76,62,50,.12);background:var(--cream);padding:20px}
+  .video-box h3{font-family:var(--serif);font-size:1.25rem;font-weight:500;color:var(--ink);margin-bottom:6px}
+  .video-meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;color:var(--mocha);margin-bottom:12px}
+  .video-meta b{color:var(--ink);font-weight:500}
+  .video-player{position:relative;background:#17120E;border-radius:2px;overflow:hidden;min-height:180px;display:flex;align-items:center;justify-content:center}
+  .video-player video{width:100%;max-height:380px;display:block;aspect-ratio:16/9;object-fit:contain;background:#17120E}
+  .video-empty{color:rgba(247,243,236,.75);font-size:12.5px;letter-spacing:.08em;text-align:center;padding:44px 20px;text-transform:uppercase}
+  .video-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;align-items:center}
+  .video-note{font-size:12px;color:var(--mocha);line-height:1.6;margin-top:12px;max-width:64ch}
+  .progress{display:none;align-items:center;gap:12px;margin-top:12px}
+  .progress.show{display:flex}
+  .progress .bar{flex:1;height:6px;background:rgba(76,62,50,.15);border-radius:99px;overflow:hidden}
+  .progress .fill{height:100%;width:0;background:var(--espresso);border-radius:99px;transition:width .2s}
+  .progress .pct{font-size:11px;color:var(--mocha);min-width:38px;text-align:end}
+
+  /* toast */
+  .toast{position:fixed;z-index:220;left:50%;bottom:26px;transform:translateX(-50%) translateY(16px);background:var(--ink);color:var(--ivory);
+    padding:13px 22px;border-radius:999px;font-size:12px;letter-spacing:.08em;max-width:min(92vw,560px);text-align:center;line-height:1.5;
+    opacity:0;pointer-events:none;transition:all .4s var(--ease)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.err{background:#8A3B31}
+  .toast.ok{background:var(--noir)}
 </style>
 </head>
 <body>
@@ -218,13 +353,12 @@
   <div class="navbar">
     <div class="u-container">
       <div class="navbar-inner">
-        <a class="logo" href="#"><span class="by">by</span><span class="name">Leïlah</span></a>
+        <a class="logo" href="index.html"><span class="by">by</span><span class="name">Leïlah</span></a>
         <nav class="primary">
-          <a href="#">Pyjamas</a>
-          <a href="#">Vêtements</a>
-          <a href="#">Chaussures</a>
-          <a href="#">Looks complets</a>
-          <a href="#">Sacs</a>
+          <a href="shop.html?cat=pajamas">Pyjamas</a>
+          <a href="shop.html?cat=clothing">Vêtements</a>
+          <a href="shop.html?cat=shoes">Chaussures</a>
+          <a href="shop.html?cat=handbags">Sacs</a>
         </nav>
         <div class="nav-actions">
           <span class="lang-static">Français</span>
@@ -242,9 +376,9 @@
     <div class="a-head">
       <div>
         <h1 class="a-title">Administration</h1>
-        <p class="a-sub">by Leïlah · Espace de gestion (démo)</p>
+        <p class="a-sub">by Leïlah · Produits, stock, commandes, vidéo d’accueil</p>
       </div>
-      <a class="a-back" href="#" data-ic="arrow"><span data-slot="arrow"></span>Retour à la boutique</a>
+      <a class="a-back" href="index.html" data-ic="arrow"><span data-slot="arrow"></span>Retour à la boutique</a>
     </div>
 
     <div class="a-grid">
@@ -258,12 +392,37 @@
   <footer class="pf">
     <div class="u-container">
       <span class="fl"><span style="font-style:italic;color:var(--mocha);font-size:.62em;">by</span> Leïlah</span>
-      <span class="fr">Aperçu statique · Administration</span>
+      <span class="fr">Espace d’administration by Leïlah</span>
     </div>
   </footer>
 </main>
 
-<script>
+<!-- ===== admin overlays: PIN gate, modals, toast ===== -->
+<div class="toast" id="toast"><span id="toast-text"></span></div>
+
+<div class="pin-screen" id="pin-screen" hidden>
+  <div class="pin-card">
+    <div class="pin-logo"><span class="by">by</span>Leïlah</div>
+    <h1>Espace administrateur</h1>
+    <p>La console de gestion est réservée à la boutique.<br/>Saisissez votre code d’accès pour continuer.</p>
+    <form class="pin-form" id="pin-form" onsubmit="return false">
+      <input type="password" id="pin-input" autocomplete="off" placeholder="Code d’accès" />
+      <button type="submit">Accéder à l’administration</button>
+    </form>
+    <p class="pin-err" id="pin-err"></p>
+    <p class="pin-hint" id="pin-hint">Le code d’accès est défini par la variable d’environnement <b>VITE_ADMIN_PIN</b>.</p>
+  </div>
+</div>
+
+<div class="modal-root" id="modal-root" hidden></div>
+
+<script>/* env-driven admin PIN — Vite remplace %VITE_ADMIN_PIN% ; laissé vide hors build, l’app génère un code provisoire */
+window.ADMIN_PIN_ENV = "%VITE_ADMIN_PIN%";</script>
+<script src="supabase-config.js"></script>
+<script src="store.js"></script>
+<script src="admin-app.js"></script>
+<!-- legacy static-preview script kept inert for reference -->
+<script type="text/plain" aria-hidden="true">
 (function(){
   "use strict";
 

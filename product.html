@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>by Leïlah — Fiche produit</title>
+<title>by Leïlah — Boutique</title>
+<meta name="robots" content="noindex" />
 <style>
   :root{
     color-scheme: light;
@@ -237,7 +238,33 @@
     opacity:0;pointer-events:none;transition:all .45s var(--ease)}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   .toast svg{width:15px;height:15px}
+  .toast{max-width:min(92vw,560px);text-align:center;letter-spacing:.05em;text-transform:none;line-height:1.5}
+  .toast.err{background:#8A3B31}
+  .toast.ok{background:var(--noir)}
+  .size-btn.off{opacity:.38;text-decoration:line-through;cursor:not-allowed;border-style:dashed}
+  .size-btn.off:hover{border-color:rgba(33,27,21,.2);background:transparent}
+  .add:disabled{opacity:.5;cursor:not-allowed}
+  .qty button:disabled{opacity:.3;cursor:not-allowed}
+  .pdp-missing{padding-block:clamp(60px,10vw,120px);text-align:center}
+  .pdp-missing h1{font-family:var(--serif);font-weight:500;font-size:clamp(1.8rem,3.6vw,2.6rem);color:var(--ink)}
+  .pdp-missing p{color:var(--mocha);margin:12px auto 26px;max-width:34em;font-size:.95rem}
+  .stock-hint .stock-avail{color:var(--mocha)}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </style>
+
 </head>
 <body>
 
@@ -258,29 +285,49 @@
       <button class="icon-btn menu-btn" aria-label="Menu">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
       </button>
-      <a class="logo" href="#"><span class="by">by</span><span class="name">Leïlah</span></a>
+      <a class="logo" href="index.html"><span class="by">by</span><span class="name">Leïlah</span></a>
       <nav class="primary" aria-label="Primary">
-        <a href="#">Nouveautés</a><a href="#">Pyjamas</a><a href="#">Vêtements</a>
-        <a href="#">Chaussures</a><a href="#">Looks complets</a><a href="#">Lookbook</a>
+        <a href="index.html#featured">Nouveautés</a><a href="shop.html?cat=pajamas">Pyjamas</a><a href="shop.html?cat=clothing">Vêtements</a>
+        <a href="shop.html?cat=shoes">Chaussures</a><a href="shop.html?cat=handbags">Sacs</a><a href="index.html#lookbook">Lookbook</a>
       </nav>
       <div class="nav-actions">
         <span class="lang-static">Français</span>
         <button class="icon-btn" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg></button>
         <button class="icon-btn" aria-label="Wishlist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 20.5S3.5 14.7 3.5 8.9A4.4 4.4 0 0 1 12 6.9a4.4 4.4 0 0 1 8.5 2c0 5.8-8.5 11.6-8.5 11.6Z"/></svg></button>
-        <button class="icon-btn" aria-label="Bag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 8h12l-.9 12.2a1 1 0 0 1-1 .8H7.9a1 1 0 0 1-1-.8L6 8Z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg><span class="bag-count" id="bag-count">2</span></button>
+        <a class="icon-btn" aria-label="Bag" href="bag.html" style="text-decoration:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 8h12l-.9 12.2a1 1 0 0 1-1 .8H7.9a1 1 0 0 1-1-.8L6 8Z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg><span class="bag-count" id="bag-count">2</span></a>
       </div>
     </div>
   </div>
 </header>
 
+<!-- Slide Menu Overlay -->
+<div class="menu-overlay" id="menu-overlay"></div>
+<div class="slide-menu" id="slide-menu">
+  <div class="menu-head">
+    <a class="logo" href="index.html"><span class="by">by</span><span class="name">Leïlah</span></a>
+    <button class="menu-close" id="menu-close" aria-label="Close menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <nav class="menu-nav">
+    <a href="index.html#featured">Nouveautés</a>
+    <a href="shop.html?cat=pajamas">Pyjamas</a>
+    <a href="shop.html?cat=clothing">Vêtements</a>
+    <a href="shop.html?cat=shoes">Chaussures</a>
+    <a href="shop.html?cat=handbags">Sacs</a>
+    <a href="#" id="menu-contact" onclick="showContentPage('contact');closeMenu();return false">Contactez-nous</a>
+    <a href="#" id="menu-about" onclick="showContentPage('about');closeMenu();return false">À propos</a>
+    <a href="#" id="menu-coming" onclick="showContentPage('coming');closeMenu();return false">Bientôt</a>
+    <a href="bag.html">Panier</a>
+  </nav>
+  <div class="menu-socials" id="menu-socials"></div>
+  <div class="menu-footer">by Leïlah · Algérie</div>
+</div>
+
 <main>
   <div class="u-container">
     <!-- breadcrumb -->
-    <nav class="crumb" aria-label="Fil d'Ariane">
-      <a href="#">by Leïlah</a><span class="sep">/</span>
-      <a href="#">Pyjamas</a><span class="sep">/</span>
-      <span class="cur">Satin Signature Pyjama</span>
-    </nav>
+    <nav class="crumb" id="crumb" aria-label="Fil d'Ariane"></nav>
 
     <div class="pdp">
       <!-- GALLERY -->
@@ -293,20 +340,20 @@
         <div class="g-frame g-2"><div class="ph t-champagne" id="g2" data-seed="satin-signature-pajama-champagne-2" data-tone="champagne" data-mono="S"></div></div>
       </div>
 
-      <!-- PURCHASE PANEL -->
-      <div class="panel reveal">
-        <p class="tagline">La soie qui accompagne vos nuits</p>
+      <!-- PURCHASE PANEL -->        <div class="panel reveal" id="panel">
+        <p class="tagline" id="p-tagline">La soie qui accompagne vos nuits</p>
         <div class="title-row">
-          <h1>Satin Signature Pyjama</h1>
+          <h1 id="p-name">Satin Signature Pyjama</h1>
           <button class="wish-lg" id="wish" aria-label="Ajouter aux favoris">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 20.5S3.5 14.7 3.5 8.9A4.4 4.4 0 0 1 12 6.9a4.4 4.4 0 0 1 8.5 2c0 5.8-8.5 11.6-8.5 11.6Z"/></svg>
           </button>
         </div>
         <div class="price-lg">
-          <span class="now">12,900 DA</span>
+          <span class="now" id="price-now">12,900 DA</span>
+          <span class="old" id="price-old" style="display:none"></span>
         </div>
 
-        <p class="desc">Ensemble pyjama en satin de soie, coupe fluide et col à passepoil contrasté. La première signature by Leïlah.</p>
+        <p class="desc" id="p-desc">Ensemble pyjama en satin de soie, coupe fluide et col à passepoil contrasté. La première signature by Leïlah.</p>
 
         <div class="divider"></div>
 
@@ -340,13 +387,13 @@
           </button>
         </div>
 
-        <div class="stock-hint" id="stock-hint"><span class="stock-dot"></span><span id="stock-text">En stock</span></div>
+        <div class="stock-hint" id="stock-hint"><span class="stock-dot"></span><span id="stock-text">En stock</span><span class="stock-avail" id="stock-avail"></span></div>
 
         <!-- accordions -->
         <div class="accs">
           <div class="acc open" data-acc>
             <button class="acc-head"><span>Détails du produit</span><span class="ic"></span></button>
-            <div class="acc-body"><div class="inner">Ensemble pyjama en satin de soie, coupe fluide et col à passepoil contrasté. La première signature by Leïlah. Coupe ample, ceinture élastiquée douce et finitions cousues main.</div></div>
+            <div class="acc-body"><div class="inner" id="acc-details">Ensemble pyjama en satin de soie, coupe fluide et col à passepoil contrasté. La première signature by Leïlah. Coupe ample, ceinture élastiquée douce et finitions cousues main.</div></div>
           </div>
           <div class="acc" data-acc>
             <button class="acc-head"><span>Matières</span><span class="ic"></span></button>
@@ -374,7 +421,7 @@
     <div class="u-container">
       <div class="sec-head reveal">
         <p class="eyebrow">by Leïlah</p>
-        <h2>Complétez le look</h2>
+        <h2 id="related-title">Vous aimerez aussi</h2>
       </div>
       <div class="prod-grid reveal" id="related-grid"></div>
     </div>
@@ -400,12 +447,274 @@
     <p><span id="foot-year">2026</span> · by Leïlah — Tous droits réservés.</p>
     <span>Livraison dans les 58 wilayas · Paiement à la livraison <span class="dot">·</span> Conçu en Algérie</span>
   </div>
-</footer>
+</footer><div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span id="toast-text">Ajouté au panier</span></div>
 
-<div class="prev-note" id="prev-note"><b>Aperçu statique</b> · fiche produit</div>
-<div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span id="toast-text">Ajouté au panier</span></div>
-
+<script src="store.js"></script>
 <script>
+/* ============================================================
+ * Product page — by Leïlah
+ * Fully driven by the shared store: product = ?p=slug
+ * (fallback: satin-signature-pajama). Sizes/colors come from
+ * the catalogue; stock is checked live against each size.
+ * ============================================================ */
+(function () {
+  "use strict";
+  var BL = window.BL;
+  function el(id) { return document.getElementById(id); }
+  function money(n) { return BL.money(n); }
+
+  var params = new URLSearchParams(window.location.search);
+  var slug = params.get("p") || "satin-signature-pajama";
+  var product = null;
+  var chosen = { colorIndex: 0, size: "", qty: 1 };
+  var hasCustomImages = false;
+
+  function badgeLabel(p) {
+    if (!p) return "";
+    if (BL.totalStock(p) === 0) return "Rupture";
+    if (p.badge) return p.badge;
+    if (p.oldPrice) return "Promo";
+    return "";
+  }
+  function setGallery() {
+    var gallery = document.querySelector(".gallery");
+    if (!gallery) return;
+    var p = product;
+    var color = p.colors[chosen.colorIndex] || p.colors[0];
+    var tone = color ? color.tone : p.tone || "champagne";
+    var imgs = (p.images || []).filter(Boolean);
+    var html = "";
+    var label = badgeLabel(p);
+    for (var i = 0; i < 3; i++) {
+      var big = i === 0 ? " g-0" : "";
+      var cls = i === 0 ? "g-0" : "g-" + i;
+      html += '<div class="g-frame ' + cls + '">';
+      if (imgs.length) {
+        html += '<div class="ph"><img src="' + BL.esc(imgs[Math.min(i, imgs.length - 1)]) + '" alt="' + BL.esc(p.name) + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" /></div>';
+      } else {
+        html += '<div class="ph t-' + tone + '" data-ph data-seed="' + BL.esc(p.slug + "-" + tone + "-" + i) + '" data-tone="' + tone + '" data-mono="' + BL.esc(p.mono || p.name.charAt(0)) + '"></div>';
+      }
+      if (i === 0 && label) html += '<span class="g-badge" id="g-badge">' + BL.esc(label) + "</span>";
+      html += "</div>";
+    }
+    gallery.innerHTML = html;
+    BL.paintPH(gallery);
+  }
+  function colorSwatchHTML() {
+    return product.colors.map(function (c, i) {
+      return '<button class="sw-lg' + (i === chosen.colorIndex ? " on" : "") + '" style="background:' + BL.esc(c.hex) + '" data-i="' + i + '" data-tone="' + BL.esc(c.tone) + '" data-label="' + BL.esc(c.label) + '" aria-label="' + BL.esc(c.label) + '" title="' + BL.esc(c.label) + '"></button>';
+    }).join("");
+  }
+  function sizesHTML() {
+    return product.sizes.map(function (sz) {
+      var out = sz.stock > 0 && product.available !== false;
+      return '<button class="size-btn' + (chosen.size === sz.name ? " on" : "") + (out ? "" : " off") + '" data-size="' + BL.esc(sz.name) + '"' + (out ? "" : " disabled") + ">" + BL.esc(sz.name) + "</button>";
+    }).join("");
+  }
+  function currentStock() {
+    return chosen.size ? BL.sizeStock(product, chosen.size) : BL.totalStock(product);
+  }
+  function updateBuyArea() {
+    var total = BL.totalStock(product);
+    var sel = BL.findSize(product, chosen.size);
+    var hint = el("stock-hint"), txt = el("stock-text"), extra = el("stock-avail");
+    hint.className = "stock-hint";
+    extra.textContent = "";
+    if (product.available === false) {
+      txt.textContent = "Produit momentanément indisponible";
+      hint.classList.add("out");
+    } else if (total === 0) {
+      txt.textContent = "Rupture de stock";
+      hint.classList.add("out");
+    } else if (!chosen.size) {
+      txt.textContent = "En stock";
+      extra.textContent = "· " + total + " unité(s) disponible(s) — choisissez une taille";
+      if (total <= 5) hint.classList.add("low");
+    } else if (sel && sel.stock === 0) {
+      txt.textContent = "Taille épuisée";
+      hint.classList.add("out");
+    } else if (sel && sel.stock <= 5) {
+      txt.textContent = "Plus que " + sel.stock + " en stock";
+      hint.classList.add("low");
+    } else {
+      txt.textContent = "En stock";
+      extra.textContent = "· " + (sel ? sel.stock : total) + " unité(s) disponible(s)";
+    }
+    var maxQty = chosen.size ? Math.max(0, currentStock()) : Math.max(0, total);
+    var addBtn = el("add");
+    var blocked = product.available === false || total === 0 || (chosen.size && maxQty === 0);
+    addBtn.disabled = blocked;
+    addBtn.classList.remove("added");
+    el("add-label").textContent = product.available === false ? "Indisponible" : total === 0 ? "Rupture de stock" : "Ajouter au panier";
+    var q = Math.min(chosen.qty, Math.max(1, maxQty));
+    if (q !== chosen.qty) chosen.qty = q;
+    setQ(q);
+  }
+  function setQ(v) {
+    var max = chosen.size ? Math.max(1, currentStock()) : Math.max(1, BL.totalStock(product));
+    chosen.qty = Math.max(1, Math.min(max, v));
+    el("q-n").textContent = chosen.qty;
+    el("q-minus").disabled = chosen.qty <= 1;
+    el("q-plus").disabled = chosen.qty >= max;
+  }
+
+  function relatedHTML(p) {
+    var avail = BL.isAvail(p);
+    var badge = !avail ? '<span class="badge dark">Rupture</span>' : (p.badge ? '<span class="badge' + (p.badge === "Best-seller" ? " dark" : "") + '">' + BL.esc(p.badge) + "</span>" : "");
+    var price = '<span class="price">' + (p.oldPrice ? '<span class="old">' + money(p.oldPrice) + "</span>" : "") + money(p.price) + "</span>";
+    return '<article class="card"><a class="frame" style="display:block" href="' + BL.productHref(p) + '">' +
+      BL.cardMediaHTML(p, { index: 0 }) + badge + "</a>" +
+      '<div class="card-body"><h3><a href="' + BL.productHref(p) + '" class="link-underline" style="text-transform:none;letter-spacing:0;font-size:inherit;font-weight:400">' + BL.esc(p.name) + "</a></h3>" +
+      '<p class="tagline">' + BL.esc(BL.catLabel(p.cat)) + "</p>" +
+      '<div class="card-foot">' + price + BL.swatchesHTML(p.colors) + "</div></div></article>";
+  }
+  function renderRelated() {
+    var grid = el("related-grid");
+    if (!grid) return;
+    var others = BL.getProducts().filter(function (p) { return p.id !== product.id; });
+    var same = others.filter(function (p) { return p.cat === product.cat && BL.isAvail(p); });
+    var rest = others.filter(function (p) { return p.cat !== product.cat && BL.isAvail(p); });
+    var pool = same.concat(rest);
+    var list = pool.slice(0, 4);
+    if (list.length < 2) {
+      others.forEach(function (p) { if (list.length < 4 && list.indexOf(p) === -1) list.push(p); });
+    }
+    grid.innerHTML = list.map(relatedHTML).join("");
+    BL.paintPH(grid);
+  }
+
+  function wireSizeButtons() {
+    var btns = document.querySelectorAll("#sizes .size-btn");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].addEventListener("click", function () {
+        if (this.disabled) return;
+        chosen.size = this.getAttribute("data-size");
+        document.querySelectorAll("#sizes .size-btn").forEach(function (b) { b.classList.toggle("on", b.getAttribute("data-size") === chosen.size); });
+        el("size-label").textContent = chosen.size;
+        updateBuyArea();
+      });
+    }
+  }
+  function wireColorButtons() {
+    var sw = document.querySelectorAll("#swatches .sw-lg");
+    for (var i = 0; i < sw.length; i++) {
+      sw[i].addEventListener("click", function () {
+        chosen.colorIndex = parseInt(this.getAttribute("data-i"), 10) || 0;
+        var color = product.colors[chosen.colorIndex];
+        el("color-label").textContent = color ? color.label : "";
+        document.querySelectorAll("#swatches .sw-lg").forEach(function (b) { b.classList.toggle("on", b === this); });
+        setGallery();
+      });
+    }
+  }
+
+  function init() {
+    BL.db();
+    product = BL.getProduct(slug) || BL.getProduct("satin-signature-pajama");
+    if (!product) return;
+    /* crumb */
+    el("crumb").innerHTML = '<a href="index.html">by Leïlah</a><span class="sep">/</span>' +
+      '<a href="shop.html?cat=' + BL.esc(product.cat) + '">' + BL.esc(BL.catLabel(product.cat)) + "</a><span class=\"sep\">/</span>" +
+      '<span class="cur">' + BL.esc(product.name) + "</span>";
+    el("p-name").textContent = product.name;
+    el("p-tagline").textContent = BL.catLabel(product.cat);
+    el("p-desc").textContent = product.desc || "";
+    el("acc-details").textContent = product.desc || "";
+    el("related-title").textContent = "Vous aimerez aussi";
+    el("price-now").textContent = money(product.price);
+    var oldEl = el("price-old");
+    if (product.oldPrice) { oldEl.style.display = ""; oldEl.textContent = money(product.oldPrice); }
+    else oldEl.style.display = "none";
+
+    chosen.colorIndex = 0;
+    var firstColor = product.colors[0];
+    el("color-label").textContent = firstColor ? firstColor.label : "";
+    el("swatches").innerHTML = colorSwatchHTML();
+    el("sizes").innerHTML = sizesHTML();
+    setGallery();
+    updateBuyArea();
+    renderRelated();
+
+    wireColorButtons();
+    wireSizeButtons();
+
+    /* wishlist heart (persisted) */
+    var wish = el("wish");
+    var wishList = BL.wishRaw();
+    if (wishList.indexOf(product.id) !== -1) wish.classList.add("on");
+    wish.addEventListener("click", function () {
+      var list = BL.wishRaw();
+      var at = list.indexOf(product.id);
+      if (at === -1) { list.push(product.id); wish.classList.add("on"); BL.saveWish(list); BL.toast("Ajouté aux favoris", "ok"); }
+      else { list.splice(at, 1); wish.classList.remove("on"); BL.saveWish(list); BL.toast("Retiré des favoris"); }
+    });
+
+    /* qty stepper */
+    el("q-minus").addEventListener("click", function () { setQ(chosen.qty - 1); });
+    el("q-plus").addEventListener("click", function () { setQ(chosen.qty + 1); });
+
+    /* add to bag */
+    el("add").addEventListener("click", function () {
+      if (!chosen.size) {
+        el("size-label").textContent = "Choisir une taille";
+        var sz = el("sizes");
+        if (sz.animate) sz.animate([{ transform: "translateX(0)" }, { transform: "translateX(-6px)" }, { transform: "translateX(6px)" }, { transform: "translateX(0)" }], { duration: 280 });
+        BL.toast("Choisissez une taille", "err");
+        return;
+      }
+      var color = product.colors[chosen.colorIndex];
+      var res = BL.addToCart(product, { size: chosen.size, qty: chosen.qty, colorLabel: color ? color.label : "" });
+      if (!res.ok) { BL.toast(res.msg, "err"); return; }
+      el("add").classList.add("added");
+      el("add-label").textContent = "Ajouté au panier";
+      BL.toast("Ajouté au panier — " + chosen.qty + " × " + chosen.size, "ok");
+      BL.refreshBagBadges(document);
+      setTimeout(function () { el("add-label").textContent = "Ajouter au panier"; el("add").classList.remove("added"); }, 1800);
+    });
+
+    /* accordions */
+    var accs = document.querySelectorAll("[data-acc]");
+    function setOpen(acc, open) {
+      var body = acc.querySelector(".acc-body");
+      if (open) { acc.classList.add("open"); body.style.maxHeight = body.scrollHeight + "px"; }
+      else { acc.classList.remove("open"); body.style.maxHeight = "0px"; }
+    }
+    for (var a = 0; a < accs.length; a++) {
+      (function (acc) {
+        acc.querySelector(".acc-head").addEventListener("click", function () { setOpen(acc, !acc.classList.contains("open")); });
+        setOpen(acc, acc.classList.contains("open"));
+      })(accs[a]);
+    }
+    window.addEventListener("resize", function () {
+      var open = document.querySelector(".acc.open");
+      if (open) { var b = open.querySelector(".acc-body"); b.style.maxHeight = b.scrollHeight + "px"; }
+    });
+
+    /* header solidify + reveal */
+    try {
+      var header = el("site-header");
+      var onScroll = function () { if (window.scrollY > 40) header.classList.add("solid"); else header.classList.remove("solid"); };
+      window.addEventListener("scroll", onScroll, { passive: true }); onScroll();
+    } catch (e) { /* ignore */ }
+    try {
+      document.body.classList.add("reveal-ready");
+      if ("IntersectionObserver" in window) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); } });
+        }, { threshold: 0.1, rootMargin: "0px 0px -6% 0px" });
+        document.querySelectorAll(".reveal").forEach(function (rv) { io.observe(rv); });
+      } else document.querySelectorAll(".reveal").forEach(function (rv) { rv.classList.add("in"); });
+    } catch (e) { /* ignore */ }
+    BL.refreshBagBadges(document);
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();
+</script>
+
+<!-- legacy static-preview script kept inert for reference -->
+<script type="text/plain" aria-hidden="true">
 (function(){
   "use strict";
 
@@ -601,6 +910,94 @@
   if(document.readyState==="loading")document.addEventListener('DOMContentLoaded',init);
   else init();
 })();
+
+  /* ---------- slide menu ---------- */
+  function closeMenu() {
+    var m = document.getElementById("slide-menu");
+    var o = document.getElementById("menu-overlay");
+    if (m) m.classList.remove("open");
+    if (o) o.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+  function openMenu() {
+    var m = document.getElementById("slide-menu");
+    var o = document.getElementById("menu-overlay");
+    if (m) m.classList.add("open");
+    if (o) o.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+  /* ---------- content pages ---------- */
+  function showContentPage(type) {
+    var s = BL.settings();
+    var data;
+    var id = "content-overlay";
+    var existing = document.getElementById(id);
+    if (existing) existing.remove();
+    if (type === "contact") data = s.contact || {};
+    else if (type === "about") data = s.about || {};
+    else if (type === "coming") data = s.comingSoon || {};
+    else return;
+    var div = document.createElement("div");
+    div.id = id;
+    div.style.cssText = "position:fixed;inset:0;z-index:200;background:var(--ivory);overflow-y:auto;-webkit-overflow-scrolling:touch";
+    var html = '<div style="max-width:720px;margin:0 auto;padding:clamp(24px,6vw,60px) clamp(20px,5vw,40px)">';
+    html += '<button onclick="document.getElementById(\'content-overlay\').remove()" style="position:fixed;top:16px;right:16px;z-index:201;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.06);display:flex;align-items:center;justify-content:center;font-size:20px">✕</button>';
+    html += '<p class="eyebrow" style="margin-bottom:1rem">by Leïlah</p>';
+    html += '<h1 style="font-family:var(--serif);font-weight:500;font-size:clamp(2rem,4vw,3rem);color:var(--ink);line-height:1.1;margin-bottom:1rem">' + BL.esc(data.title || "") + '</h1>';
+    if (data.description) html += '<p style="color:var(--mocha);margin-bottom:1.5rem;font-size:1.05rem">' + BL.esc(data.description) + '</p>';
+    if (data.content) html += '<div style="color:var(--ink);line-height:1.8;font-size:1rem;white-space:pre-wrap">' + BL.esc(data.content) + '</div>';
+    if (type === "contact") {
+      if (data.phone) html += '<p style="margin-top:1rem;color:var(--ink)">📞 ' + BL.esc(data.phone) + '</p>';
+      if (data.whatsapp) html += '<p style="margin-top:.5rem;color:var(--ink)">💬 WhatsApp: ' + BL.esc(data.whatsapp) + '</p>';
+      if (data.email) html += '<p style="margin-top:.5rem;color:var(--ink)">✉️ ' + BL.esc(data.email) + '</p>';
+      var socials = s.socials || data.socials || [];
+      if (socials.length) {
+        html += '<div style="margin-top:1.5rem;display:flex;gap:16px;flex-wrap:wrap">';
+        for (var i = 0; i < socials.length; i++) {
+          html += '<a href="' + BL.esc(socials[i].url) + '" target="_blank" rel="noopener" style="color:var(--rose);font-size:14px">' + BL.esc(socials[i].name) + '</a>';
+        }
+        html += '</div>';
+      }
+      if (data.additional) html += '<p style="margin-top:1.5rem;color:var(--mocha);white-space:pre-wrap">' + BL.esc(data.additional) + '</p>';
+    }
+    if (type === "coming" && data.items && data.items.length) {
+      html += '<div style="margin-top:2rem;display:grid;gap:1.2rem">';
+      for (var j = 0; j < data.items.length; j++) {
+        var it = data.items[j];
+        html += '<div style="padding:1.2rem;border:1px solid rgba(33,27,21,.1);border-radius:4px">';
+        html += '<h3 style="font-family:var(--serif);font-size:1.3rem;margin-bottom:.4rem">' + BL.esc(it.name || "") + '</h3>';
+        if (it.description) html += '<p style="color:var(--mocha);font-size:.9rem">' + BL.esc(it.description) + '</p>';
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+    if (data.additional && type !== "contact") html += '<p style="margin-top:1.5rem;color:var(--mocha);white-space:pre-wrap">' + BL.esc(data.additional) + '</p>';
+    html += '</div>';
+    div.innerHTML = html;
+    document.body.appendChild(div);
+    div.addEventListener("click", function(e) { if (e.target === div) div.remove(); });
+  }
+  /* ---------- menu socials ---------- */
+  
+  /* menu event listeners */
+  var menuBtnEl = document.querySelector(".menu-btn");
+  if (menuBtnEl) menuBtnEl.addEventListener("click", function(e) { e.preventDefault(); openMenu(); });
+  var menuCloseEl = document.getElementById("menu-close");
+  if (menuCloseEl) menuCloseEl.addEventListener("click", function(e) { e.preventDefault(); closeMenu(); });
+  var menuOverlayEl = document.getElementById("menu-overlay");
+  if (menuOverlayEl) menuOverlayEl.addEventListener("click", closeMenu);
+  document.addEventListener("keydown", function(e) { if (e.key === "Escape") closeMenu(); });
+  if (BL.refreshBagBadges) BL.refreshBagBadges(document);
+  function renderMenuSocials() {
+    var el = document.getElementById("menu-socials");
+    if (!el || !BL.getSocials) return;
+    var socials = BL.getSocials();
+    var html = "";
+    for (var i = 0; i < socials.length; i++) {
+      html += '<a href="' + BL.esc(socials[i].url) + '" target="_blank" rel="noopener">' + BL.esc(socials[i].name) + '</a>';
+    }
+    el.innerHTML = html;
+  }
 </script>
 </body>
 </html>

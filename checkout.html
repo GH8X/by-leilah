@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>by Leïlah — Commande</title>
+<meta name="robots" content="noindex" />
 <style>
   :root{
     color-scheme: light;
@@ -216,7 +217,29 @@
   .toast{position:fixed;z-index:70;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--ivory);padding:13px 22px;border-radius:999px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:.6em;opacity:0;pointer-events:none;transition:all .45s var(--ease)}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   .toast svg{width:15px;height:15px}
+  .toast{max-width:min(92vw,560px);text-align:center;letter-spacing:.05em;text-transform:none;line-height:1.5}
+  .toast.err{background:#8A3B31}
+  .toast.ok{background:var(--noir)}
+  #place-order:disabled{opacity:.45;cursor:not-allowed}
+  .co-empty{padding-block:clamp(60px,10vw,120px);text-align:center}
+  .co-empty h2{font-family:var(--serif);font-weight:500;font-size:clamp(1.8rem,3.6vw,2.6rem);color:var(--ink)}
+  .co-empty p{color:var(--mocha);margin:12px auto 26px;max-width:34em;font-size:.95rem}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </style>
+
 </head>
 <body>
 
@@ -228,8 +251,8 @@
   </div></div>
   <div class="navbar"><div class="u-container navbar-inner">
     <button class="icon-btn menu-btn" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
-    <a class="logo" href="#"><span class="by">by</span><span class="name">Leïlah</span></a>
-    <nav class="primary"><a href="#">Nouveautés</a><a href="#">Pyjamas</a><a href="#">Vêtements</a><a href="#">Chaussures</a><a href="#">Looks complets</a></nav>
+    <a class="logo" href="index.html"><span class="by">by</span><span class="name">Leïlah</span></a>
+    <nav class="primary"><a href="shop.html?cat=pajamas">Pyjamas</a><a href="shop.html?cat=clothing">Vêtements</a><a href="shop.html?cat=shoes">Chaussures</a><a href="shop.html?cat=handbags">Sacs</a></nav>
     <div class="nav-actions">
       <span class="lang-static">Français</span>
       <button class="icon-btn" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg></button>
@@ -238,11 +261,35 @@
   </div></div>
 </header>
 
+<!-- Slide Menu Overlay -->
+<div class="menu-overlay" id="menu-overlay"></div>
+<div class="slide-menu" id="slide-menu">
+  <div class="menu-head">
+    <a class="logo" href="index.html"><span class="by">by</span><span class="name">Leïlah</span></a>
+    <button class="menu-close" id="menu-close" aria-label="Close menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <nav class="menu-nav">
+    <a href="index.html#featured">Nouveautés</a>
+    <a href="shop.html?cat=pajamas">Pyjamas</a>
+    <a href="shop.html?cat=clothing">Vêtements</a>
+    <a href="shop.html?cat=shoes">Chaussures</a>
+    <a href="shop.html?cat=handbags">Sacs</a>
+    <a href="#" id="menu-contact" onclick="showContentPage('contact');closeMenu();return false">Contactez-nous</a>
+    <a href="#" id="menu-about" onclick="showContentPage('about');closeMenu();return false">À propos</a>
+    <a href="#" id="menu-coming" onclick="showContentPage('coming');closeMenu();return false">Bientôt</a>
+    <a href="bag.html">Panier</a>
+  </nav>
+  <div class="menu-socials" id="menu-socials"></div>
+  <div class="menu-footer">by Leïlah · Algérie</div>
+</div>
+
 <main>
   <!-- ============ CHECKOUT SCREEN ============ -->
   <section class="screen active" id="checkout-screen">
     <div class="u-container">
-      <a class="co-back" href="#" onclick="return false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 18l-6-6 6-6"/></svg> Retour au panier</a>
+      <a class="co-back" href="bag.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 18l-6-6 6-6"/></svg> Retour au panier</a>
       <h1 class="co-title">Commande</h1>
 
       <div class="co-wrap">
@@ -307,10 +354,10 @@
               <div class="baridi-head">Effectuez le paiement manuellement via BaridiMob, puis téléchargez votre preuve ci-dessous.</div>
               <div class="baridi-body">
                 <div class="bd-rows">
-                  <div class="bd-row"><span class="k">Nom du magasin</span><span class="v">[STORE NAME]</span></div>
-                  <div class="bd-row"><span class="k">Informations de paiement</span><span class="v">[BARIDIMOB PAYMENT INFORMATION]</span></div>
-                  <div class="bd-row"><span class="k">Compte / RIP</span><span class="v">[PAYMENT ACCOUNT INFORMATION]</span></div>
-                  <div class="bd-row"><span class="k">Téléphone</span><span class="v" dir="ltr">[STORE PHONE NUMBER]</span></div>
+                  <div class="bd-row"><span class="k">Nom du magasin</span><span class="v" id="bd-name">[STORE NAME]</span></div>
+                  <div class="bd-row"><span class="k">Informations de paiement</span><span class="v" id="bd-info">[BARIDIMOB PAYMENT INFORMATION]</span></div>
+                  <div class="bd-row"><span class="k">Compte / RIP</span><span class="v" id="bd-acct">[PAYMENT ACCOUNT INFORMATION]</span></div>
+                  <div class="bd-row"><span class="k">Téléphone</span><span class="v" id="bd-phone" dir="ltr">[STORE PHONE NUMBER]</span></div>
                 </div>
                 <div class="qr-box">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v7M17 20h4M14 17v4"/></svg>
@@ -425,10 +472,261 @@
   </div>
 </footer>
 
-<div class="prev-note" id="prev-note"><b>Aperçu statique</b> · commande &amp; paiement</div>
 <div class="toast" id="toast"><span id="toast-text"></span></div>
 
+<script src="store.js"></script>
 <script>
+/* ============================================================
+ * Checkout — by Leïlah
+ * Orders go through the shared store (store.js): stock is checked
+ * and deducted on confirmation; historical orders are snapshots.
+ * ============================================================ */
+(function () {
+  "use strict";
+  var BL = window.BL;
+  function el(id) { return document.getElementById(id); }
+  function money(n) { return BL.money(n); }
+  function toast(msg, type) {
+    var box = el("toast");
+    box.classList.remove("err", "ok");
+    if (type === "err") box.classList.add("err");
+    el("toast-text").textContent = msg;
+    box.classList.add("show");
+    clearTimeout(box._t);
+    box._t = setTimeout(function () { box.classList.remove("show"); }, 3600);
+  }
+
+  var state = { wilaya: 16, commune: "Hydra", method: "baridimob", proof: null };
+
+  /* ---------- media for one order/cart line ---------- */
+  function mediaHTML(product, it) {
+    if (product) return BL.cardMediaHTML(product, { index: 0, varSeed: it.size || "v" });
+    var mono = ((it.name || "L").charAt(0) || "L").toUpperCase();
+    return '<div class="ph t-champagne" data-ph data-seed="' + BL.esc((it.slug || it.name || "produit") + "-order") + '" data-tone="champagne" data-mono="' + mono + '"></div>';
+  }
+  function cartLineHTML(v) {
+    var priceHTML = v.ok ? '<div class="lp">' + money(v.unitPrice * v.qty) + "</div>" : '<div class="lp" style="color:#B06A5E">' + BL.esc(v.reason) + "</div>";
+    var meta = [v.colorLabel, v.size].filter(Boolean).join(" · ");
+    return '<div class="sum-item"><div class="sum-thumb">' + mediaHTML(v.product, v) + '<span class="qb">' + v.qty + "</span></div>" +
+      '<div class="sum-info"><div><div class="nm">' + BL.esc(v.name) + '</div><div class="meta">' + BL.esc(meta) + "</div></div>" + priceHTML + "</div></div>";
+  }
+  function orderLineHTML(it) {
+    var p = it.pid ? BL.getProduct(it.pid) : null;
+    var meta = [it.colorLabel, it.size].filter(Boolean).join(" · ");
+    return '<div class="sum-item"><div class="sum-thumb">' + mediaHTML(p, it) + '<span class="qb">' + it.quantity + "</span></div>" +
+      '<div class="sum-info"><div><div class="nm">' + BL.esc(it.name) + '</div><div class="meta">' + BL.esc(meta) + "</div></div>" +
+      '<div class="lp">' + money(it.price * it.quantity) + "</div></div></div>";
+  }
+
+  /* ---------- delivery ---------- */
+  function feeInfo(code) { return BL.feeFor(code, subtotal()); }
+  function subtotal() {
+    var view = BL.cartView();
+    return BL.cartTotals(view);
+  }
+  function updateSummary() {
+    var view = BL.cartView();
+    var sub = BL.cartTotals(view);
+    var f = feeInfo(state.wilaya);
+    el("sum-items").innerHTML = view.map(cartLineHTML).join("");
+    BL.paintPH(el("sum-items"));
+    el("sum-subtotal").textContent = money(sub);
+    var dEl = el("sum-delivery");
+    if (!state.wilaya) dEl.innerHTML = '<span style="color:var(--taupe)">Sélectionnez d’abord une wilaya</span>';
+    else if (f.free) dEl.innerHTML = '<span class="free">Offerte</span>';
+    else dEl.textContent = money(f.fee);
+    el("sum-total").textContent = money(sub + (state.wilaya ? f.fee : 0));
+    var problems = view.filter(function (v) { return !v.ok; });
+    var btn = el("place-order");
+    if (problems.length) {
+      btn.disabled = true;
+      btn.textContent = "Résolvez les articles signalés";
+    } else {
+      btn.disabled = false;
+      btn.textContent = "Confirmer la commande";
+    }
+    if (sub >= BL.FREE_DELIVERY_THRESHOLD) { /* none */ }
+  }
+
+  function fillCommunes() {
+    var code = state.wilaya, sel = el("f-commune"), txt = el("f-commune-text");
+    var list = (BL.COMMUNES || {})[code];
+    if (list && list.length) {
+      sel.style.display = ""; txt.style.display = "none";
+      sel.innerHTML = list.map(function (c) { return '<option value="' + BL.esc(c) + '">' + BL.esc(c) + "</option>"; }).join("") + '<option value="__other">Autre commune…</option>';
+      if (list.indexOf(state.commune) >= 0) sel.value = state.commune;
+      else { state.commune = list[0]; sel.value = state.commune; }
+    } else {
+      sel.style.display = "none"; txt.style.display = ""; txt.value = ""; state.commune = "";
+    }
+  }
+
+  function markErr(id, msg) {
+    var f = el(id);
+    f.classList.add("err");
+    var m = f.parentElement.querySelector(".msg");
+    if (m) m.textContent = msg || "Ce champ est requis";
+  }
+  function clearErr(id) {
+    var f = el(id);
+    f.classList.remove("err");
+    var m = f.parentElement.querySelector(".msg");
+    if (m) m.textContent = "";
+  }
+
+  function showSuccess(o) {
+    var isBaridi = o.paymentMethod === "baridimob";
+    el("ok-id").textContent = o.id;
+    var box = el("ok-status");
+    box.className = "ok-status " + (isBaridi ? "pending" : "confirmed");
+    el("ok-status-ico").innerHTML = isBaridi
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7l8-4 8 4v10l-8 4-8-4z"/><path d="m9 12 2 2 4-4"/></svg>';
+    el("ok-status-title").textContent = isBaridi ? "Vérification du paiement en attente" : "Commande confirmée";
+    el("ok-status-note").textContent = isBaridi
+      ? "Nous vérifions votre paiement BaridiMob. Vous serez contactée dès la confirmation. Le stock a été réservé pour votre commande."
+      : "Notre transporteur vous contactera pour organiser la livraison. Le stock a été réservé pour votre commande.";
+    el("ok-items").innerHTML = o.items.map(orderLineHTML).join("");
+    BL.paintPH(el("ok-items"));
+    el("ok-subtotal").textContent = money(o.subtotal);
+    el("ok-delivery").innerHTML = o.deliveryFee === 0 ? '<span class="free">Offerte</span>' : money(o.deliveryFee);
+    el("ok-total").textContent = money(o.total);
+    var d = new Date(o.createdAt);
+    el("ok-date").textContent = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+    el("ok-name").textContent = o.customer.firstName + " " + o.customer.lastName;
+    el("ok-address").textContent = o.customer.address;
+    el("ok-place").textContent = o.customer.commune + ", " + o.customer.wilaya;
+    el("ok-phone").textContent = o.customer.phone;
+    el("ok-method").textContent = isBaridi ? "BaridiMob" : "Paiement à la livraison";
+    el("ok-ref").textContent = isBaridi && o.paymentReference ? o.paymentReference : "";
+    el("bag-count").textContent = "0";
+    el("checkout-screen").classList.remove("active");
+    el("success-screen").classList.add("active");
+    window.scrollTo(0, 0);
+  }
+
+  function placeOrder() {
+    var ok = true;
+    ["f-first", "f-last", "f-phone", "f-address"].forEach(clearErr); clearErr("f-wilaya"); clearErr("f-commune");
+    var first = el("f-first").value.trim();
+    var last = el("f-last").value.trim();
+    var phone = el("f-phone").value.trim();
+    var address = el("f-address").value.trim();
+    var notes = el("f-notes").value.trim();
+    if (!first) { markErr("f-first"); ok = false; }
+    if (!last) { markErr("f-last"); ok = false; }
+    if (!/^0\d{9}$/.test(phone.replace(/[\s.]/g, ""))) { markErr("f-phone", "Numéro de téléphone invalide (ex. 0555 12 34 56)"); ok = false; }
+    if (!state.wilaya) { markErr("f-wilaya"); ok = false; }
+    if (!address) { markErr("f-address"); ok = false; }
+    var commune = state.commune || el("f-commune-text").value.trim() || el("f-commune").value;
+    if (!commune || commune === "__other") { markErr("f-commune"); ok = false; }
+    if (!ok) { toast("Vérifiez le formulaire avant de continuer.", "err"); return; }
+    if (state.method === "baridimob" && !state.proof) {
+      var errBox = el("proof-err");
+      errBox.textContent = "Merci d’ajouter une preuve de paiement.";
+      errBox.style.display = "";
+      el("proof-drop").classList.add("err");
+      toast("Ajoutez une preuve de paiement.", "err");
+      el("baridi-panel").scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    var res = BL.createOrder(
+      { firstName: first, lastName: last, phone: phone, address: address, notes: notes, commune: commune },
+      { wilayaCode: state.wilaya, method: state.method, proof: state.proof, reference: el("f-ref").value.trim() }
+    );
+    if (!res.ok) {
+      toast(res.error || "Commande impossible.", "err");
+      return;
+    }
+    showSuccess(res.order);
+  }
+
+  function init() {
+    BL.db();
+    /* store info in BaridiMob panel */
+    el("bd-name").textContent = BL.BARIDIMOB.storeName;
+    el("bd-info").textContent = BL.BARIDIMOB.paymentInformation;
+    el("bd-acct").textContent = BL.BARIDIMOB.accountInformation;
+    el("bd-phone").textContent = BL.BARIDIMOB.phone;
+    el("foot-year").textContent = new Date().getFullYear();
+
+    var view = BL.cartView();
+    if (!view.length) {
+      var coWrap = document.querySelector("#checkout-screen .co-wrap");
+      coWrap.innerHTML = '<div class="co-empty"><h2>Votre panier est vide</h2><p>Ajoutez vos pièces préférées avant de passer commande.</p><a class="btn btn-primary" href="shop.html">Découvrir la collection</a></div>';
+      return;
+    }
+
+    /* wilayas */
+    var w = el("f-wilaya");
+    w.innerHTML = '<option value="">Sélectionner une wilaya</option>' + BL.WILAYAS.map(function (x) {
+      return '<option value="' + x.code + '">' + x.code + ". " + BL.esc(x.name) + "</option>";
+    }).join("");
+    w.value = String(state.wilaya);
+    fillCommunes();
+    el("f-commune").value = state.commune;
+    w.addEventListener("change", function () {
+      state.wilaya = this.value ? parseInt(this.value, 10) : 0;
+      fillCommunes();
+      updateSummary();
+    });
+    el("f-commune").addEventListener("change", function () {
+      if (this.value === "__other") {
+        this.style.display = "none";
+        var t = el("f-commune-text");
+        t.style.display = "";
+        t.focus();
+        state.commune = "";
+      } else state.commune = this.value;
+    });
+    el("f-commune-text").addEventListener("input", function () { state.commune = this.value; });
+
+    /* summary + proof + payment toggles */
+    updateSummary();
+    var cards = document.querySelectorAll("#pay-cards .pay-card");
+    function setMethod(m) {
+      state.method = m;
+      for (var i = 0; i < cards.length; i++) cards[i].classList.toggle("on", cards[i].getAttribute("data-method") === m);
+      el("baridi-panel").style.display = (m === "baridimob") ? "" : "none";
+    }
+    for (var c = 0; c < cards.length; c++) cards[c].addEventListener("click", function () { setMethod(this.getAttribute("data-method")); });
+    setMethod("baridimob");
+
+    var input = el("proof-input"), drop = el("proof-drop"), fileBox = el("proof-file"), errBox = el("proof-err");
+    var MIME = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+    drop.addEventListener("click", function () { input.click(); });
+    input.addEventListener("change", function () {
+      var f = this.files && this.files[0];
+      if (!f) return;
+      errBox.style.display = "none"; drop.classList.remove("err");
+      if (MIME.indexOf(f.type) < 0) {
+        errBox.textContent = "Format non pris en charge. Utilisez JPG, PNG, WEBP ou PDF.";
+        errBox.style.display = ""; drop.classList.add("err"); state.proof = null; return;
+      }
+      if (f.size > 8 * 1048576) {
+        errBox.textContent = "Fichier trop volumineux (8 Mo max).";
+        errBox.style.display = ""; drop.classList.add("err"); state.proof = null; return;
+      }
+      state.proof = { fileName: f.name, fileType: f.type, fileSize: f.size };
+      el("proof-name").textContent = f.name;
+      el("proof-size").textContent = BL.humanSize(f.size);
+      drop.style.display = "none"; fileBox.style.display = "";
+    });
+    el("proof-remove").addEventListener("click", function () {
+      state.proof = null; input.value = ""; fileBox.style.display = "none"; drop.style.display = "";
+    });
+    el("place-order").addEventListener("click", placeOrder);
+    el("continue-btn").addEventListener("click", function () { window.location.href = "shop.html"; });
+    BL.refreshBagBadges(document);
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();
+</script>
+
+<!-- legacy static-preview script kept inert for reference -->
+<script type="text/plain" aria-hidden="true">
 (function(){
   "use strict";
 
@@ -658,6 +956,94 @@
 
   if(document.readyState==="loading")document.addEventListener('DOMContentLoaded',init);else init();
 })();
+
+  /* ---------- slide menu ---------- */
+  function closeMenu() {
+    var m = document.getElementById("slide-menu");
+    var o = document.getElementById("menu-overlay");
+    if (m) m.classList.remove("open");
+    if (o) o.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+  function openMenu() {
+    var m = document.getElementById("slide-menu");
+    var o = document.getElementById("menu-overlay");
+    if (m) m.classList.add("open");
+    if (o) o.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+  /* ---------- content pages ---------- */
+  function showContentPage(type) {
+    var s = BL.settings();
+    var data;
+    var id = "content-overlay";
+    var existing = document.getElementById(id);
+    if (existing) existing.remove();
+    if (type === "contact") data = s.contact || {};
+    else if (type === "about") data = s.about || {};
+    else if (type === "coming") data = s.comingSoon || {};
+    else return;
+    var div = document.createElement("div");
+    div.id = id;
+    div.style.cssText = "position:fixed;inset:0;z-index:200;background:var(--ivory);overflow-y:auto;-webkit-overflow-scrolling:touch";
+    var html = '<div style="max-width:720px;margin:0 auto;padding:clamp(24px,6vw,60px) clamp(20px,5vw,40px)">';
+    html += '<button onclick="document.getElementById(\'content-overlay\').remove()" style="position:fixed;top:16px;right:16px;z-index:201;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.06);display:flex;align-items:center;justify-content:center;font-size:20px">✕</button>';
+    html += '<p class="eyebrow" style="margin-bottom:1rem">by Leïlah</p>';
+    html += '<h1 style="font-family:var(--serif);font-weight:500;font-size:clamp(2rem,4vw,3rem);color:var(--ink);line-height:1.1;margin-bottom:1rem">' + BL.esc(data.title || "") + '</h1>';
+    if (data.description) html += '<p style="color:var(--mocha);margin-bottom:1.5rem;font-size:1.05rem">' + BL.esc(data.description) + '</p>';
+    if (data.content) html += '<div style="color:var(--ink);line-height:1.8;font-size:1rem;white-space:pre-wrap">' + BL.esc(data.content) + '</div>';
+    if (type === "contact") {
+      if (data.phone) html += '<p style="margin-top:1rem;color:var(--ink)">📞 ' + BL.esc(data.phone) + '</p>';
+      if (data.whatsapp) html += '<p style="margin-top:.5rem;color:var(--ink)">💬 WhatsApp: ' + BL.esc(data.whatsapp) + '</p>';
+      if (data.email) html += '<p style="margin-top:.5rem;color:var(--ink)">✉️ ' + BL.esc(data.email) + '</p>';
+      var socials = s.socials || data.socials || [];
+      if (socials.length) {
+        html += '<div style="margin-top:1.5rem;display:flex;gap:16px;flex-wrap:wrap">';
+        for (var i = 0; i < socials.length; i++) {
+          html += '<a href="' + BL.esc(socials[i].url) + '" target="_blank" rel="noopener" style="color:var(--rose);font-size:14px">' + BL.esc(socials[i].name) + '</a>';
+        }
+        html += '</div>';
+      }
+      if (data.additional) html += '<p style="margin-top:1.5rem;color:var(--mocha);white-space:pre-wrap">' + BL.esc(data.additional) + '</p>';
+    }
+    if (type === "coming" && data.items && data.items.length) {
+      html += '<div style="margin-top:2rem;display:grid;gap:1.2rem">';
+      for (var j = 0; j < data.items.length; j++) {
+        var it = data.items[j];
+        html += '<div style="padding:1.2rem;border:1px solid rgba(33,27,21,.1);border-radius:4px">';
+        html += '<h3 style="font-family:var(--serif);font-size:1.3rem;margin-bottom:.4rem">' + BL.esc(it.name || "") + '</h3>';
+        if (it.description) html += '<p style="color:var(--mocha);font-size:.9rem">' + BL.esc(it.description) + '</p>';
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+    if (data.additional && type !== "contact") html += '<p style="margin-top:1.5rem;color:var(--mocha);white-space:pre-wrap">' + BL.esc(data.additional) + '</p>';
+    html += '</div>';
+    div.innerHTML = html;
+    document.body.appendChild(div);
+    div.addEventListener("click", function(e) { if (e.target === div) div.remove(); });
+  }
+  /* ---------- menu socials ---------- */
+  
+  /* menu event listeners */
+  var menuBtnEl = document.querySelector(".menu-btn");
+  if (menuBtnEl) menuBtnEl.addEventListener("click", function(e) { e.preventDefault(); openMenu(); });
+  var menuCloseEl = document.getElementById("menu-close");
+  if (menuCloseEl) menuCloseEl.addEventListener("click", function(e) { e.preventDefault(); closeMenu(); });
+  var menuOverlayEl = document.getElementById("menu-overlay");
+  if (menuOverlayEl) menuOverlayEl.addEventListener("click", closeMenu);
+  document.addEventListener("keydown", function(e) { if (e.key === "Escape") closeMenu(); });
+  if (BL.refreshBagBadges) BL.refreshBagBadges(document);
+  function renderMenuSocials() {
+    var el = document.getElementById("menu-socials");
+    if (!el || !BL.getSocials) return;
+    var socials = BL.getSocials();
+    var html = "";
+    for (var i = 0; i < socials.length; i++) {
+      html += '<a href="' + BL.esc(socials[i].url) + '" target="_blank" rel="noopener">' + BL.esc(socials[i].name) + '</a>';
+    }
+    el.innerHTML = html;
+  }
 </script>
 </body>
 </html>

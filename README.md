@@ -1,108 +1,105 @@
-# by Leïlah
+# by Leïlah — Boutique en ligne
 
-Premium women's fashion & pajamas storefront for the Algerian market — feminine, editorial, and elegant. Built as a fast, fully client-side React application with a manual (no-API) payment flow suited to a first launch.
+Premium women's fashion & pyjamas e-commerce site (by Leïlah, Algeria).
+Pure static site (HTML + CSS + vanilla JS) with **no build step required to run** —
+the catalogue, orders, cart and admin configuration persist in the visitor's browser
+(`localStorage` + IndexedDB) through the shared data layer `store.js`.
 
-- **Languages:** Arabic (RTL), French, English — French is the default.
-- **Currency & delivery:** Algerian Dinar (DZD), all 58 wilayas, cash on delivery + manual BaridiMob.
-- **No backend required to run.** Orders, cart, and wishlist persist in the browser (`localStorage`). A demo admin console lets the shop owner verify BaridiMob proofs by hand.
+## Pages
 
----
+| Page             | File          | Description                                                    |
+| ---------------- | ------------- | -------------------------------------------------------------- |
+| Home             | `index.html`  | Hero (optional admin-managed video), dynamic catalogue         |
+| Shop             | `shop.html`   | Catalogue listing — search + category filters                  |
+| Product          | `product.html`| Product detail — images, sizes, stock-aware add-to-cart        |
+| Bag              | `bag.html`    | Cart with live stock revalidation                              |
+| Checkout         | `checkout.html`| Delivery (58 wilayas) + payment, creates the order            |
+| Admin            | `admin.html`  | Dashboard, stock management, orders, home-hero video manager   |
 
-## Tech stack
+Shared assets: `store.js` (data layer), `admin-app.js` (admin logic), `bl.css` (shop/bag styling).
 
-| Concern | Choice |
-| --- | --- |
-| Build tool | Vite 5 |
-| UI | React 18 + TypeScript (strict) |
-| Styling | Tailwind CSS v3 (custom warm-neutral design tokens) |
-| Animation | Framer Motion 11 (reduced-motion aware) |
-| Routing | React Router v6 (route-based code splitting) |
-| Icons | lucide-react |
-| Type system | Cormorant Garamond (editorial serif) + Jost (utility sans) |
+## How the data layer works
 
----
+`store.js` exposes a single `window.BL` API used by every page:
 
-## Getting started
+- **Products** — 33 seeded items (id, slug, name, category, price, old price, colors,
+  sizes with per-size stock, images, description, availability). All mutation APIs
+  (`upsertProduct`, `deleteProduct`, `setStock`, `setAvailable`) are admin-only.
+- **Orders** — every order stores an immutable snapshot (product name, unit price,
+  quantity, colour/size, customer, date, payment + order status) at creation time.
+  Later price/name edits **never** rewrite history.
+- **Stock ↔ orders** — `createOrder()` validates the whole cart against live stock
+  (product available, size exists, requested quantity ≤ stock), then atomically
+  deducts stock, auto-flips products to **Out of Stock** when a size hits 0, and
+  empties the cart. Over-ordering is rejected on add-to-cart *and* at checkout.
+- **Cancellations** — when an order is set to `cancelled`, its quantities are restored
+  to the matching product/size (when the product or size still exists); reactivating a
+  cancelled order re-deducts if enough stock remains. The order history itself never changes.
+- **Cart** — persists per browser and is re-validated live on every page view.
+- **Home-hero video** — uploaded from Admin, stored as a blob in IndexedDB + meta in
+  `localStorage`, so it survives refreshes/restarts/logins; when no video is set the
+  original silk-art hero shows. Type/size validation, preview, replace and remove are
+  handled in the Admin panel only.
 
-Requires **Node.js 18+** (Node 20 or 22 recommended) and npm.
+**Important**: this is a client-side store — data lives in the *admin's* browser
+(`localStorage` keys `bl.db`, `bl.settings`, etc.). Deploy to a single always-on admin
+device to manage stock, or point an admin at the same browser profile. There is no
+server database in this static deployment.
+
+## Admin access
+
+Open `admin.html` and enter the PIN. **There is no hardcoded default code** — the
+PIN comes from the `VITE_ADMIN_PIN` environment variable (also accepted: `ADMIN_PIN`):
+
+- **With Vite** (`bun run dev` / `npm run dev`): Vite replaces `%VITE_ADMIN_PIN%`
+  directly in `admin.html`, so define the var in your shell or in `.env.local`
+  (e.g. `VITE_ADMIN_PIN=your-code`).
+- **Static build** (`node scripts/build.mjs`): the build injects the value of
+  `VITE_ADMIN_PIN`/`ADMIN_PIN` from the environment into `dist/admin.html`.
+- **If the variable is unset**: the admin console generates a random 6-digit
+  provisional code on first use and shows it on the login screen; it is stored
+  per-browser and can be changed later in the dashboard "Admin" section. Setting
+  `VITE_ADMIN_PIN` afterwards locks the console to that code (the "Admin" section
+  then only shows a note — the code must be changed via the env var).
+
+The Admin includes: dashboard statistics (products in/out of stock, orders by
+status), full stock management (add/edit/delete/search/filter, per-size quantity
+controls, availability), order lifecycle (verify payment, confirm, ship, deliver,
+cancel with stock restoration), and the Home Hero video manager.
+
+> Note: like everything else in this static deployment, the PIN check runs in the
+> browser — it stops casual/accidental access, not a determined attacker. For
+> real protection, put the admin panel behind server-side auth.
+
+## Run locally
 
 ```bash
-# 1. Install dependencies
-npm install
+# Option A — plain static files (no install required)
+python3 -m http.server 5173     # then open http://localhost:5173
 
-# 2. Start the dev server (http://localhost:5173)
-npm run dev
-
-# 3. Type-check + production build (outputs to dist/)
-npm run build
-
-# 4. Preview the production build locally
-npm run preview
+# Option B — with Vite
+npm install / bun install
+bun run dev                     # or: npm run dev
 ```
 
-Additional scripts:
+## Checks, tests & production build
 
 ```bash
-npm run typecheck   # tsc --noEmit only (no bundle)
+node scripts/check.mjs   # syntax-checks every script + verifies page links
+node scripts/test.mjs    # functional tests of the order/stock engine (npm test)
+node scripts/build.mjs   # copies the static site (HTML/JS/CSS) into dist/
+bun run build            # same as above
 ```
 
-> The production `build` script runs `tsc --noEmit` first, so a type error fails the build.
+`npm test` / `bun run test` runs the order↔stock regression suite in Node
+(stock deduction, over-order protection, cancel/reactivate restore semantics,
+per-unit order prices, history immutability).
 
----
+Deploy anything inside `dist/` to any static host (Netlify, Vercel, GitHub Pages, …).
 
-## Project structure
+## Layout / design
 
-```
-src/
-  components/      UI: layout, home sections, product, shop, cart, checkout, ui primitives
-  config/          store.ts — brand + BaridiMob display placeholders (EDIT BEFORE LAUNCH)
-  context/         Cart, Wishlist, Language (i18n), Orders, UI — all React context providers
-  data/            products, categories, wilayas (58), delivery fees, mock orders, lookbook
-  hooks/           useLocalStorage, useMediaQuery, useScrolled
-  i18n/            translations.ts — every UI string in ar / fr / en
-  lib/             format (DZD, dates), motion presets, class helpers, shop filtering
-  pages/           Home, Shop, category templates, Product, Bag, Checkout, OrderSuccess, Admin, 404
-  types/           domain types (Product, Order, CartItem, …)
-  App.tsx          route table (storefront under shared Layout; /admin standalone)
-  main.tsx         provider tree + app mount
-public/            favicon
-```
-
-Routes: `/`, `/shop`, `/pajamas`, `/clothing`, `/shoes`, `/handbags`, `/complete-looks`, `/product/:slug`, `/lookbook`, `/about`, `/wishlist`, `/bag`, `/checkout`, `/order-success`, `/admin`, and a catch-all 404.
-
----
-
-## Payments — read this before going live
-
-This first version uses **manual payment verification only**. There is intentionally **no BaridiMob API integration and no automatic payment processing** — that keeps sensitive credentials out of the frontend entirely.
-
-How it works:
-
-1. At checkout the customer picks **Cash on Delivery** or **BaridiMob**.
-2. For BaridiMob, the app shows your transfer details and the customer uploads a proof screenshot. **Only the file's metadata (name, type, size) is stored — never the file bytes and never card/bank data.**
-3. New BaridiMob orders start as **"Payment verification pending"** and are **never marked paid automatically**.
-4. The shop owner opens **`/admin`**, reviews each proof by hand, and marks the payment **verified** or **rejected**. Verifying confirms the order.
-
-### Go-live checklist
-
-Replace the bracketed placeholders (they are deliberately fake) before launching:
-
-- **`src/config/store.ts`** → `STORE` (legal name, phone, WhatsApp, email) and `BARIDIMOB` (`storeName`, `paymentInformation`, `accountInformation` / RIP, `qrCode`, `phone`).
-- **`src/config/store.ts`** → `SOCIAL_LINKS` — swap each `url: '#'` for your real Instagram / TikTok / Facebook profile.
-- **`src/data/deliveryFees.ts`** → set the real per-wilaya delivery fees and the free-delivery threshold.
-- **Product catalogue & imagery** → `src/data/products.ts`. Products ship with deterministic editorial placeholder art; add real image paths to each product's `images` array when available.
-- **Going persistent** → orders currently live in `localStorage`. To share orders across devices/admins, wire the Orders context to a backend (e.g. Supabase or Firebase). The `/admin` console and order model are structured to make that swap straightforward.
-
-Security notes baked into this project: no secret keys or payment credentials in source, no invented APIs or URLs, and no sensitive payment data persisted client-side.
-
----
-
-## Internationalization
-
-All copy is read through `useT()` (UI strings) and `tt()` (localized data such as product descriptions). Switching to Arabic sets `dir="rtl"` on `<html>`; the layout uses logical CSS utilities throughout so it mirrors correctly. Add or edit strings in `src/i18n/translations.ts`.
-
----
-
-## Deployment
-
-`npm run build` produces a static `dist/` folder — deploy it to any static host (Vercel, Netlify, Cloudflare Pages, etc.). Because the app uses client-side routing, configure the host to **rewrite all paths to `/index.html`** (SPA fallback) so deep links like `/product/...` resolve.
+Dark-ink editorial palette, silk-gradient artwork (deterministic placeholders painted
+client-side), Cormorant Garamond + Jost, responsive grid. French is the default
+language with EN/AR toggle on the home page; the storefront (shop/bag/product/checkout)
+is French, consistent with the seed copy.

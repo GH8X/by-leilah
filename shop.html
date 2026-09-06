@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>by Leïlah — Boutique</title>
+<meta name="description" content="Pyjamas, vêtements, chaussures et sacs by Leïlah — élégance féminine pensée en Algérie. Livraison dans les 58 wilayas." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="bl.css" />
+
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header id="site-header">
+  <div class="announce" aria-label="annonces">
+    <div class="announce-track">
+      <span>Livraison disponible dans toute l'Algérie</span><span>Paiement à la livraison disponible</span><span>Retours offerts sous 14 jours</span>
+      <span>Livraison disponible dans toute l'Algérie</span><span>Paiement à la livraison disponible</span><span>Retours offerts sous 14 jours</span>
+    </div>
+  </div>
+  <div class="navbar">
+    <div class="u-container navbar-inner">
+      <button class="icon-btn menu-btn" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+      <a class="logo" href="index.html"><span class="by">by</span><span class="name">Leïlah</span></a>
+      <nav class="primary" aria-label="Navigation">
+        <a href="shop.html?cat=pajamas">Pyjamas</a><a href="shop.html?cat=clothing">Vêtements</a>
+        <a href="shop.html?cat=shoes">Chaussures</a><a href="shop.html?cat=handbags">Sacs</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="icon-btn" href="shop.html" aria-label="Boutique"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg></a>
+        <a class="icon-btn" href="bag.html" aria-label="Panier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 8h12l-.9 12.2a1 1 0 0 1-1 .8H7.9a1 1 0 0 1-1-.8L6 8Z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg><span class="bag-count" style="display:none">0</span></a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Slide Menu Overlay -->
+<div class="menu-overlay" id="menu-overlay"></div>
+<div class="slide-menu" id="slide-menu">
+  <div class="menu-head">
+    <a class="logo" href="index.html"><span class="by">by</span><span class="name">Leïlah</span></a>
+    <button class="menu-close" id="menu-close" aria-label="Close menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <nav class="menu-nav">
+    <a href="index.html#featured">Nouveautés</a>
+    <a href="shop.html?cat=pajamas">Pyjamas</a>
+    <a href="shop.html?cat=clothing">Vêtements</a>
+    <a href="shop.html?cat=shoes">Chaussures</a>
+    <a href="shop.html?cat=handbags">Sacs</a>
+    <a href="#" id="menu-contact" onclick="showContentPage('contact');closeMenu();return false">Contactez-nous</a>
+    <a href="#" id="menu-about" onclick="showContentPage('about');closeMenu();return false">À propos</a>
+    <a href="#" id="menu-coming" onclick="showContentPage('coming');closeMenu();return false">Bientôt</a>
+    <a href="bag.html">Panier</a>
+  </nav>
+  <div class="menu-socials" id="menu-socials"></div>
+  <div class="menu-footer">by Leïlah · Algérie</div>
+</div>
+
+<main>
+  <div class="u-container shop-section">
+    <div class="shop-head">
+      <p class="eyebrow" id="shop-eyebrow">La boutique</p>
+      <h1 id="shop-title">Toute la collection</h1>
+      <p class="sub" id="shop-sub">Des pièces pensées pour votre élégance de chaque jour — pyjamas, essentiels, chaussures et sacs.</p>
+    </div>
+
+    <div class="shop-toolbar">
+      <div class="cat-pills" id="cat-pills"></div>
+      <div class="shop-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+        <input type="search" id="shop-q" placeholder="Rechercher un produit…" aria-label="Rechercher" />
+      </div>
+    </div>
+    <p class="shop-count" id="shop-count"></p>
+
+    <div class="prod-grid" id="shop-grid" style="margin-top:18px"></div>
+    <div class="empty-state" id="shop-empty" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+      <h3>Aucun produit ne correspond</h3>
+      <p>Essayez une autre recherche ou une autre catégorie.</p>
+    </div>
+  </div>
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="u-container foot-bottom">
+    <p><span id="foot-year">2026</span> · by Leïlah — Tous droits réservés.</p>
+    <span>Livraison dans les 58 wilayas · Paiement à la livraison <span class="dot">·</span> Conçu en Algérie · <a href="admin.html">Espace admin</a></span>
+  </div>
+</footer>
+
+<div class="toast" id="toast"><span id="toast-text"></span></div>
+
+<script src="store.js"></script>
+<script>
+(function () {
+  "use strict";
+  var BL = window.BL;
+  function el(id) { return document.getElementById(id); }
+
+  var params = new URLSearchParams(window.location.search);
+  var state = {
+    cat: params.get("cat") || "all",
+    q: params.get("q") || ""
+  };
+
+  var TITLES = {
+    all: ["Toute la collection", "L'univers de by Leïlah — au complet."],
+    pajamas: ["Pyjamas", "La soie qui accompagne vos nuits."],
+    clothing: ["Vêtements", "Les essentiels de votre jour."],
+    shoes: ["Chaussures", "Chaque pas, avec grâce."],
+    handbags: ["Sacs", "La compagne de tous les jours."]
+  };
+
+  function badgeHTML(p) {
+    var avail = BL.isAvail(p);
+    if (!avail) return '<span class="badge dark">Rupture</span>';
+    if (p.badge === "Best-seller") return '<span class="badge dark">Best-seller</span>';
+    if (p.badge) return '<span class="badge">' + BL.esc(p.badge) + "</span>";
+    if (p.oldPrice) return '<span class="badge rose">Promo</span>';
+    return "";
+  }
+  function cardHTML(p) {
+    var avail = BL.isAvail(p);
+    var price = '<span class="price">' + (p.oldPrice ? '<span class="old">' + BL.money(p.oldPrice) + "</span>" : "") + BL.money(p.price) + "</span>";
+    var wish = "";
+    try {
+      if (BL.wishRaw().indexOf(p.id) !== -1) wish = " on";
+    } catch (e) { /* ignore */ }
+    return '<article class="card' + (avail ? "" : " dim") + '" data-pid="' + BL.esc(p.id) + '">' +
+      '<a class="frame" style="display:block" href="' + BL.productHref(p) + '">' +
+      BL.cardMediaHTML(p, { index: 0 }) + badgeHTML(p) + "</a>" +
+      '<button class="wish' + wish + '" data-act="wish" data-pid="' + BL.esc(p.id) + '" aria-label="Favoris"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 20.5S3.5 14.7 3.5 8.9A4.4 4.4 0 0 1 12 6.9a4.4 4.4 0 0 1 8.5 2c0 5.8-8.5 11.6-8.5 11.6Z"/></svg></button>' +
+      (avail ? '<button class="quick" data-act="quickAdd" data-pid="' + BL.esc(p.id) + '">Ajout rapide</button>' : '<span class="out-hint">Rupture de stock</span>') +
+      '<div class="card-body"><h3><a href="' + BL.productHref(p) + '" class="link-underline" style="text-transform:none;letter-spacing:0;font-size:inherit;font-weight:400">' + BL.esc(p.name) + "</a></h3>" +
+      '<p class="tagline">' + BL.esc(BL.catLabel(p.cat)) + "</p>" +
+      '<div class="card-foot">' + price + BL.swatchesHTML(p.colors) + "</div></div></article>";
+  }
+
+  function renderPills() {
+    var list = [{ key: "all", label: "Tout" }].concat(BL.CATS);
+    el("cat-pills").innerHTML = list.map(function (c) {
+      return '<a class="cat-pill' + (state.cat === c.key ? " on" : "") + '" href="shop.html' + (c.key === "all" ? "" : "?cat=" + c.key) + '">' + c.label + "</a>";
+    }).join("");
+  }
+  function applyFilters() {
+    var grid = el("shop-grid"), empty = el("shop-empty");
+    var q = state.q.trim().toLowerCase();
+    var list = BL.getProducts().filter(function (p) {
+      if (state.cat !== "all" && p.cat !== state.cat) return false;
+      if (!q) return true;
+      var hay = (p.name + " " + p.slug + " " + BL.catLabel(p.cat)).toLowerCase();
+      return hay.indexOf(q) !== -1;
+    });
+    grid.innerHTML = list.map(cardHTML).join("");
+    empty.style.display = list.length ? "none" : "";
+    el("shop-count").textContent = list.length + (list.length === 1 ? " produit" : " produits");
+    if (list.length) BL.paintPH(grid);
+  }
+  function renderTitles() {
+    var t = TITLES[state.cat] || TITLES.all;
+    el("shop-title").textContent = t[0];
+    el("shop-sub").textContent = t[1];
+    el("shop-eyebrow").textContent = state.cat === "all" ? "La boutique" : BL.catLabel(state.cat);
+  }
+  function toast(msg, type) {
+    var box = el("toast");
+    box.classList.toggle("err", type === "err");
+    el("toast-text").textContent = msg;
+    box.classList.add("show");
+    clearTimeout(box._t);
+    box._t = setTimeout(function () { box.classList.remove("show"); }, 2400);
+  }
+
+  function onClick(e) {
+    var actEl = e.target.closest ? e.target.closest("[data-act]") : null;
+    if (!actEl) return;
+    var act = actEl.getAttribute("data-act");
+    var pid = actEl.getAttribute("data-pid");
+    var p = BL.getProduct(pid);
+    if (!p) return;
+    if (act === "wish") {
+      var list = BL.wishRaw();
+      var at = list.indexOf(pid);
+      if (at === -1) { list.push(pid); actEl.classList.add("on"); toast("Ajouté aux favoris"); }
+      else { list.splice(at, 1); actEl.classList.remove("on"); toast("Retiré des favoris"); }
+      BL.saveWish(list);
+      return;
+    }
+    if (act === "quickAdd") {
+      e.preventDefault();
+      var size = null;
+      p.sizes.forEach(function (sz) { if (!size && sz.stock > 0 && p.available !== false) size = sz.name; });
+      if (!size) { toast("Rupture de stock", "err"); return; }
+      var colorLabel = p.colors.length ? p.colors[0].label : "";
+      var res = BL.addToCart(p, { size: size, qty: 1, colorLabel: colorLabel });
+      if (!res.ok) { toast(res.msg, "err"); return; }
+      toast("Ajouté au panier — taille " + size + " · " + BL.money(p.price));
+      BL.refreshBagBadges(document);
+      return;
+    }
+  }
+
+  function init() {
+    BL.db();
+    var qInput = el("shop-q");
+    qInput.value = state.q;
+    qInput.addEventListener("input", function () { state.q = qInput.value; applyFilters(); });
+    renderPills();
+    renderTitles();
+    applyFilters();
+    el("foot-year").textContent = new Date().getFullYear();
+    document.addEventListener("click", onClick);
+    BL.refreshBagBadges(document);
+
+    document.body.classList.add("reveal-ready");
+    try {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); } });
+      }, { threshold: 0.1 });
+      document.querySelectorAll(".reveal").forEach(function (el2) { io.observe(el2); });
+    } catch (err) { /* ignore */ }
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();
+
+  /* ---------- slide menu ---------- */
+  function closeMenu() {
+    var m = document.getElementById("slide-menu");
+    var o = document.getElementById("menu-overlay");
+    if (m) m.classList.remove("open");
+    if (o) o.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+  function openMenu() {
+    var m = document.getElementById("slide-menu");
+    var o = document.getElementById("menu-overlay");
+    if (m) m.classList.add("open");
+    if (o) o.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+  /* ---------- content pages ---------- */
+  function showContentPage(type) {
+    var s = BL.settings();
+    var data;
+    var id = "content-overlay";
+    var existing = document.getElementById(id);
+    if (existing) existing.remove();
+    if (type === "contact") data = s.contact || {};
+    else if (type === "about") data = s.about || {};
+    else if (type === "coming") data = s.comingSoon || {};
+    else return;
+    var div = document.createElement("div");
+    div.id = id;
+    div.style.cssText = "position:fixed;inset:0;z-index:200;background:var(--ivory);overflow-y:auto;-webkit-overflow-scrolling:touch";
+    var html = '<div style="max-width:720px;margin:0 auto;padding:clamp(24px,6vw,60px) clamp(20px,5vw,40px)">';
+    html += '<button onclick="document.getElementById(\'content-overlay\').remove()" style="position:fixed;top:16px;right:16px;z-index:201;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.06);display:flex;align-items:center;justify-content:center;font-size:20px">✕</button>';
+    html += '<p class="eyebrow" style="margin-bottom:1rem">by Leïlah</p>';
+    html += '<h1 style="font-family:var(--serif);font-weight:500;font-size:clamp(2rem,4vw,3rem);color:var(--ink);line-height:1.1;margin-bottom:1rem">' + BL.esc(data.title || "") + '</h1>';
+    if (data.description) html += '<p style="color:var(--mocha);margin-bottom:1.5rem;font-size:1.05rem">' + BL.esc(data.description) + '</p>';
+    if (data.content) html += '<div style="color:var(--ink);line-height:1.8;font-size:1rem;white-space:pre-wrap">' + BL.esc(data.content) + '</div>';
+    if (type === "contact") {
+      if (data.phone) html += '<p style="margin-top:1rem;color:var(--ink)">📞 ' + BL.esc(data.phone) + '</p>';
+      if (data.whatsapp) html += '<p style="margin-top:.5rem;color:var(--ink)">💬 WhatsApp: ' + BL.esc(data.whatsapp) + '</p>';
+      if (data.email) html += '<p style="margin-top:.5rem;color:var(--ink)">✉️ ' + BL.esc(data.email) + '</p>';
+      var socials = s.socials || data.socials || [];
+      if (socials.length) {
+        html += '<div style="margin-top:1.5rem;display:flex;gap:16px;flex-wrap:wrap">';
+        for (var i = 0; i < socials.length; i++) {
+          html += '<a href="' + BL.esc(socials[i].url) + '" target="_blank" rel="noopener" style="color:var(--rose);font-size:14px">' + BL.esc(socials[i].name) + '</a>';
+        }
+        html += '</div>';
+      }
+      if (data.additional) html += '<p style="margin-top:1.5rem;color:var(--mocha);white-space:pre-wrap">' + BL.esc(data.additional) + '</p>';
+    }
+    if (type === "coming" && data.items && data.items.length) {
+      html += '<div style="margin-top:2rem;display:grid;gap:1.2rem">';
+      for (var j = 0; j < data.items.length; j++) {
+        var it = data.items[j];
+        html += '<div style="padding:1.2rem;border:1px solid rgba(33,27,21,.1);border-radius:4px">';
+        html += '<h3 style="font-family:var(--serif);font-size:1.3rem;margin-bottom:.4rem">' + BL.esc(it.name || "") + '</h3>';
+        if (it.description) html += '<p style="color:var(--mocha);font-size:.9rem">' + BL.esc(it.description) + '</p>';
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+    if (data.additional && type !== "contact") html += '<p style="margin-top:1.5rem;color:var(--mocha);white-space:pre-wrap">' + BL.esc(data.additional) + '</p>';
+    html += '</div>';
+    div.innerHTML = html;
+    document.body.appendChild(div);
+    div.addEventListener("click", function(e) { if (e.target === div) div.remove(); });
+  }
+  /* ---------- menu socials ---------- */
+  
+  /* menu event listeners */
+  var menuBtnEl = document.querySelector(".menu-btn");
+  if (menuBtnEl) menuBtnEl.addEventListener("click", function(e) { e.preventDefault(); openMenu(); });
+  var menuCloseEl = document.getElementById("menu-close");
+  if (menuCloseEl) menuCloseEl.addEventListener("click", function(e) { e.preventDefault(); closeMenu(); });
+  var menuOverlayEl = document.getElementById("menu-overlay");
+  if (menuOverlayEl) menuOverlayEl.addEventListener("click", closeMenu);
+  document.addEventListener("keydown", function(e) { if (e.key === "Escape") closeMenu(); });
+  if (BL.refreshBagBadges) BL.refreshBagBadges(document);
+  function renderMenuSocials() {
+    var el = document.getElementById("menu-socials");
+    if (!el || !BL.getSocials) return;
+    var socials = BL.getSocials();
+    var html = "";
+    for (var i = 0; i < socials.length; i++) {
+      html += '<a href="' + BL.esc(socials[i].url) + '" target="_blank" rel="noopener">' + BL.esc(socials[i].name) + '</a>';
+    }
+    el.innerHTML = html;
+  }
+</script>
+</body>
+</html>
