@@ -1,9 +1,12 @@
 # by Leïlah — Boutique en ligne
 
 Premium women's fashion & pyjamas e-commerce site (by Leïlah, Algeria).
-Pure static site (HTML + CSS + vanilla JS) with **no build step required to run** —
-the catalogue, orders, cart and admin configuration persist in the visitor's browser
-(`localStorage` + IndexedDB) through the shared data layer `store.js`.
+Pure static site (HTML + CSS + vanilla JS) with **no build step required to run**.
+The persistent source of truth is **Supabase** (`cloud.js` + `store.js`): products,
+per-size stock, orders, order statuses and website settings live in the cloud
+(`products`, `product_sizes`, `orders`, `order_items`, `website_settings`), while the
+browser `localStorage` mirror is only a fast cache/offline fallback. Setup = one
+SQL file + one admin account — see **SETUP.md**.
 
 ## Pages
 
@@ -16,7 +19,8 @@ the catalogue, orders, cart and admin configuration persist in the visitor's bro
 | Checkout         | `checkout.html`| Delivery (58 wilayas) + payment, creates the order            |
 | Admin            | `admin.html`  | Dashboard, stock management, orders, home-hero video manager   |
 
-Shared assets: `store.js` (data layer), `admin-app.js` (admin logic), `bl.css` (shop/bag styling).
+Shared assets: `store.js` (data layer), `admin-app.js` (admin logic), `bl.css` (shop/bag styling),
+`supabase-config.js` (public Supabase project URL + anon key — regenerated into `dist/` by the build).
 
 ## How the data layer works
 
@@ -36,40 +40,59 @@ Shared assets: `store.js` (data layer), `admin-app.js` (admin logic), `bl.css` (
   to the matching product/size (when the product or size still exists); reactivating a
   cancelled order re-deducts if enough stock remains. The order history itself never changes.
 - **Cart** — persists per browser and is re-validated live on every page view.
-- **Home-hero video** — uploaded from Admin, stored as a blob in IndexedDB + meta in
-  `localStorage`, so it survives refreshes/restarts/logins; when no video is set the
-  original silk-art hero shows. Type/size validation, preview, replace and remove are
-  handled in the Admin panel only.
+- **Home-hero video** — uploaded from Admin → **Supabase Storage** (`byleilah` bucket,
+  fixed object `hero/home-hero.mp4` → stable public HTTPS URL read by every visitor,
+  no export/copy/redeploy needed). Only if no cloud storage is configured does the
+  upload fall back to a browser-local blob so the admin can still preview locally;
+  the silk-art hero remains the graceful fallback for everyone until a video is
+  published. Type/size validation, preview, replace and remove are handled in the
+  Admin panel only.
 
-**Important**: this is a client-side store — data lives in the *admin's* browser
-(`localStorage` keys `bl.db`, `bl.settings`, etc.). Deploy to a single always-on admin
-device to manage stock, or point an admin at the same browser profile. There is no
-server database in this static deployment.
+**Production architecture (cloud-first)**: every page loads `cloud.js`, which
+synchronises the Supabase catalogue/settings into the local mirror before first paint
+(`BL.whenReady`). Checkout calls the atomic server function `bl_place_order` — prices,
+stock and totals are validated and applied inside one database transaction, so two
+simultaneous customers can never oversell the same size. The Admin console writes
+products/stock/orders/settings/hero-video straight to Supabase and only updates the
+local mirror after the server confirms. If Supabase is unreachable or not configured,
+the site degrades to its local demo data rather than showing fake successes.
 
 ## Admin access
 
-Open `admin.html` and enter the PIN. **There is no hardcoded default code** — the
-PIN comes from the `VITE_ADMIN_PIN` environment variable (also accepted: `ADMIN_PIN`):
+Open `admin.html` — the console is protected by **Supabase Auth** (e-mail +
+password). The old browser-only PIN gate is gone: an admin is a real Supabase user
+whose account carries the `admin` role claim (`app_metadata.role = "admin"`), which
+every RLS and storage policy checks server-side.
 
-- **With Vite** (`bun run dev` / `npm run dev`): Vite replaces `%VITE_ADMIN_PIN%`
-  directly in `admin.html`, so define the var in your shell or in `.env.local`
-  (e.g. `VITE_ADMIN_PIN=your-code`).
-- **Static build** (`node scripts/build.mjs`): the build injects the value of
-  `VITE_ADMIN_PIN`/`ADMIN_PIN` from the environment into `dist/admin.html`.
-- **If the variable is unset**: the admin console generates a random 6-digit
-  provisional code on first use and shows it on the login screen; it is stored
-  per-browser and can be changed later in the dashboard "Admin" section. Setting
-  `VITE_ADMIN_PIN` afterwards locks the console to that code (the "Admin" section
-  then only shows a note — the code must be changed via the env var).
+- Create the account in **Supabase → Authentication → Users** (sign-ups disabled),
+  then promote it with the SQL shown in `supabase/schema.sql` / `SETUP.md`.
+- After sign-in, the dashboard synchronises products, stock, orders and settings
+  from Supabase; each save is written to the cloud before the UI confirms it.
+- Use **Réglages → Migration** to import the starter catalogue/orders already
+  present in your browser into an empty cloud (nothing is overwritten).
 
 The Admin includes: dashboard statistics (products in/out of stock, orders by
 status), full stock management (add/edit/delete/search/filter, per-size quantity
-controls, availability), order lifecycle (verify payment, confirm, ship, deliver,
-cancel with stock restoration), and the Home Hero video manager.
+controls, availability, direct image upload), order lifecycle (verify payment,
+confirm, ship, deliver, cancel with exactly-once stock restoration), website
+settings (contact, about, socials — stored in `website_settings`), and the Home
+Hero video manager (authenticated upload → fixed public object).
 
-> Note: like everything else in this static deployment, the PIN check runs in the
-> browser — it stops casual/accidental access, not a determined attacker. For
-> real protection, put the admin panel behind server-side auth.
+## Supabase public config
+
+`supabase-config.js` ships the **project URL + anon (publishable) key** — public-by-design
+values that are safe in client code and are what the hero video URL is derived from
+(`<url>/storage/v1/object/public/byleilah/hero/home-hero.mp4`).
+
+- The build (`node scripts/build.mjs`) regenerates `dist/supabase-config.js` from the
+  `SUPABASE_URL` / `SUPABASE_ANON_KEY` env vars (`NEXT_PUBLIC_*` aliases accepted). If those
+  are unset, it keeps the values checked into the source file — a production build never
+  ships a blank config.
+- Never put a service-role / secret key in this file or anywhere in the frontend.
+- One-time setup: run `supabase/schema.sql` in the SQL editor (tables + RLS + admin
+  role + storage policies + atomic order/stock functions) and follow `SETUP.md` to
+  create/promote the admin account. Storage writes are scoped to authenticated
+  admins (folders `hero/` and `product-images/`); public visitors only read.
 
 ## Run locally
 
@@ -85,10 +108,12 @@ bun run dev                     # or: npm run dev
 ## Checks, tests & production build
 
 ```bash
-node scripts/check.mjs   # syntax-checks every script + verifies page links
-node scripts/test.mjs    # functional tests of the order/stock engine (npm test)
-node scripts/build.mjs   # copies the static site (HTML/JS/CSS) into dist/
-bun run build            # same as above
+node scripts/check.mjs     # syntax-checks every script + verifies page links
+node scripts/test.mjs      # functional tests of the order/stock engine (npm test)
+node scripts/test-cloud.mjs # cloud layer: auth session, catalog sync, RPC (npm run test:cloud)
+node scripts/test-dom.mjs  # DOM smoke test of the home page (npm run test:dom)
+node scripts/build.mjs     # copies the static site (HTML/JS/CSS) into dist/
+bun run build              # same as above
 ```
 
 `npm test` / `bun run test` runs the order↔stock regression suite in Node

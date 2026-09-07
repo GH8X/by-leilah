@@ -9,29 +9,34 @@
   var BL = window.BL;
   var $ = function (id) { return document.getElementById(id); };
 
-  /* ---------- admin PIN gate (env-driven, see store.js adminPinInfo) ----------
-   * Runs before the legacy boot() so the hint reflects the active code source:
-   * VITE_ADMIN_PIN env var, a stored code, or a generated provisional code. */
+  /* ---------- Supabase Auth gate ----------
+   * The Admin console requires a Supabase Auth session whose user carries the
+   * "admin" role claim; RLS enforces it server-side on every table & bucket.
+   * No browser-only PIN is used for security anymore. */
   function envPin() {
     return BL.envAdminPin();
   }
-  (function pinGate() {
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", pinGate);
-      return;
-    }
-    try {
-      var info = BL.adminPinInfo();
-      var hint = $("pin-hint");
-      if (!hint) return;
-      if (info.env) {
-        hint.innerHTML = "Le code d’accès est défini par la variable d’environnement <b>VITE_ADMIN_PIN</b>.";
-      } else if (info.generated || /^\d{6}$/.test(info.pin)) {
-        hint.innerHTML = "Code provisoire généré pour cet appareil : <b>" + info.pin + "</b> — définissez la variable <b>VITE_ADMIN_PIN</b> pour le verrouiller.";
-      } else {
-        hint.innerHTML = "Code modifiable dans <b>Réglages</b>.";
-      }
-    } catch (err) { /* store not ready yet — default hint stays */ }
+  function cloudAuthed() {
+    return !!(window.BL.cloud && BL.cloud.isAdmin && BL.cloud.isAdmin());
+  }
+  function cloudReady() {
+    return !!(window.BL.cloud && BL.cloud.configured && BL.cloud.configured());
+  }
+  /* Every local settings save is ALSO pushed to Supabase (website_settings)
+   * when an admin session is active — no silent local-only saves. */
+  (function patchSettingsSave() {
+    var orig = BL.saveSettings;
+    BL.saveSettings = function (obj) {
+      var ok = orig(obj);
+      try {
+        if (ok && cloudAuthed() && window.BL.cloud && BL.cloud.admin && BL.cloud.admin.writeSettings) {
+          BL.cloud.admin.writeSettings().catch(function (err) {
+            toast("Réglages non synchronisés vers Supabase : " + ((err && err.message) || "erreur"), "err");
+          });
+        }
+      } catch (e) { /* keep local behaviour */ }
+      return ok;
+    };
   })();
 
   /* ---------- icons (lucide-style path data) ---------- */
@@ -254,7 +259,12 @@
     h += '<h2 class="sec-title">' + t("admin.recentOrders") + "</h2>";
     var recent = sortedOrders().slice(0, 5);
     h += '<div class="o-list">' + (recent.length ? recent.map(function (o) { return orderRow(o, true); }).join("") : '<div class="empty">' + ico("bag") + "<p>Aucune commande pour le moment.</p></div>") + "</div>";
-    h += '<p class="mock-note">Données de démonstration stockées dans ce navigateur (localStorage) — produits, stock et commandes sont partagés avec la boutique. Le code d’accès admin est défini par la variable d’environnement <b>VITE_ADMIN_PIN</b> ; sans variable définie, un code provisoire est généré à la première connexion (voir Réglages).</p>';
+    var srcNote = cloudAuthed()
+      ? 'Source de vérité : <b>Supabase</b> — produits, stock et commandes synchronisés depuis le cloud (les statuts modifiés ici sont enregistrés côté serveur).'
+      : (cloudReady()
+        ? 'Stockage Supabase connecté — <b>connectez-vous</b> (compte admin) pour gérer les données en ligne.'
+        : 'Démonstration locale (Supabase non configuré) — les données restent dans ce navigateur et ne sont pas persistées en ligne.');
+    h += '<p class="mock-note">' + srcNote + '</p>';
     return h;
   }
 
@@ -355,14 +365,16 @@
     var meta = BL.heroLoadMeta();
     var active = BL.heroActive();
     var v = state.video;
-    var cfg = BL.supabaseCfg();
-    var connected = !!(cfg.url && cfg.anonKey);
+    var connected = cloudReady();
+    var authed = cloudAuthed();
     var pubUrl = BL.heroVideoUrl ? BL.heroVideoUrl() : "";
     var h = '<div class="sect">';
     h += '<div class="video-box"><h3>Vidéo de fond — page d’accueil</h3>';
-    h += '<div class="video-meta"><span>' + (connected
-      ? '✅ Stockage cloud connecté — les vidéos enregistrées sont publiées pour tous les visiteurs'
-      : '⚠️ Stockage cloud non configuré — l’enregistrement ne sera visible que depuis ce navigateur. Configurez Supabase dans Réglages → Stockage vidéo.') + '</span></div>';
+    h += '<div class="video-meta"><span>' + (authed
+      ? '✅ Connecté — la publication remplace hero/home-hero.mp4 et est immédiatement visible par tous les visiteurs'
+      : (connected
+        ? '⚠️ Connexion administrateur requise pour publier la vidéo (Supabase Auth).'
+        : '⚠️ Stockage cloud non configuré — publication indisponible.')) + '</span></div>';
     if (pubUrl) {
       h += '<div class="video-meta"><span>URL publique : <b>' + esc(pubUrl) + '</b></span><span>' + (pubUrl.indexOf('blob:') === 0 || pubUrl.indexOf('localhost') !== -1 ? '⚠️ URL non publique' : '✅ Visible par tous les visiteurs') + '</span></div>';
     }
@@ -383,7 +395,7 @@
     h += '<input type="file" id="vfile" accept="video/mp4,video/webm,video/quicktime,video/ogg" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" />';
     h += '<button class="btn-x" data-act="pickVideo">' + ico('upload') + (active ? 'Remplacer la vidéo' : 'Choisir une vidéo') + '</button>';
     if (v.pendingFile) {
-      h += '<button class="btn-x ghost" data-act="saveVideo">' + ico('check') + (connected ? 'Publier la vidéo' : 'Enregistrer (local uniquement)') + '</button>';
+      h += '<button class="btn-x ghost" data-act="saveVideo">' + ico('check') + (authed ? 'Publier la vidéo' : 'Enregistrer (aperçu local)') + '</button>';
       h += '<button class="btn-x ghost" data-act="exportVideo">' + ico('download') + 'Télécharger une copie (.mp4)</button>';
       h += '<button class="btn-x ghost" data-act="cancelVideo">' + ico('x') + 'Annuler la sélection</button>';
     }
@@ -473,8 +485,8 @@
     h += '<input class="inp" id="sb-key" type="text" value="' + esc(sb.anonKey || '') + '" placeholder="eyJhbGciOi…" /></div>';
     h += '</div>';
     h += '<button class="btn-x" data-act="saveSupabase" style="margin-top:12px">Enregistrer le stockage</button>';
-    h += '<p class="video-note">SQL à exécuter une seule fois (Supabase → SQL Editor) :</p>';
-    h += '<textarea class="inp" readonly rows="9" style="font-family:monospace;font-size:12px;margin-top:8px">insert into storage.buckets (id, name, public) values (\'byleilah\', \'byleilah\', true) on conflict (id) do update set public = true;\n\ncreate policy "hero insert" on storage.objects for insert to anon with check (bucket_id = \'byleilah\' and (storage.foldername(name))[1] = \'hero\');\ncreate policy "hero update" on storage.objects for update to anon using (bucket_id = \'byleilah\' and (storage.foldername(name))[1] = \'hero\');\ncreate policy "hero delete" on storage.objects for delete to anon using (bucket_id = \'byleilah\' and (storage.foldername(name))[1] = \'hero\');</textarea>';
+    h += '<p class="video-note">Schéma Supabase : exécutez une fois <b>supabase/schema.sql</b> (Supabase → SQL Editor). Il crée/complète les tables (products, product_sizes, orders, order_items, website_settings), active la RLS, définit le rôle admin et verrouille le bucket « byleilah » : lecture publique, écritures réservées au compte administrateur.</p>';
+    h += '<p class="video-note">✅ Depuis cette version, la publication vidéo passe par un vrai compte administrateur (Supabase Auth). Le panneau ne peut plus être utilisé avec un simple code local ; sans connexion, aucune écriture n’est envoyée au cloud.</p>';
     h += '<p class="video-note">Astuce : définissez SUPABASE_URL et SUPABASE_ANON_KEY dans les variables d’environnement du déploiement — le build les injecte automatiquement dans supabase-config.js et aucun réglage manuel n’est nécessaire.</p>';
     h += '</section>';
     /* Hero Video URL (optional override) */
@@ -529,16 +541,22 @@
     h += '</div>';
     h += '<button class="btn-x" data-act="addSocial" style="margin-top:8px">+ Ajouter un réseau</button> ';
     h += '<button class="btn-x" data-act="saveSocials" style="margin-top:8px">Enregistrer les réseaux</button></section>';
-    /* Admin Code */
-    h += '<section class="set-block"><h2>Code d\'accès admin</h2>';
-    h += envPin()
-      ? '<p class="video-note">Code contrôlé par <b>VITE_ADMIN_PIN</b>.</p>'
-      : '<div class="f-grid two"><div class="fld"><span class="lbl">Nouveau code</span><input class="inp" id="set-pin" type="text" value="" placeholder="4 caractères min." /></div><div class="fld"><span class="lbl">&nbsp;</span><button class="btn-x" data-act="savePin">Enregistrer le code</button></div></div>';
+    /* Admin session */
+    var acct = window.BL.cloud && BL.cloud.sessionEmail ? BL.cloud.sessionEmail() : "";
+    h += '<section class="set-block"><h2>Compte administrateur</h2>';
+    h += cloudAuthed()
+      ? '<p class="video-note">✅ Connecté : <b>' + esc(acct) + '</b> — rôle admin vérifié par Supabase. Les modifications de cette page sont enregistrées dans le cloud (bouton « Déconnexion » en haut à droite).</p>'
+      : '<p class="video-note">Connexion requise : e-mail + mot de passe Supabase (compte créé dans Supabase → Authentication → Users puis promu admin — voir SETUP.md).</p>';
+    h += '<div style="margin-top:12px"><button class="btn-x" data-act="refreshCloud">Actualiser les données (Supabase)</button></div>';
     h += '</section>';
     /* Reset */
-    h += '<section class="set-block"><h2>Données de démonstration</h2>';
-    h += '<p class="video-note">Réinitialise le catalogue et les commandes de démonstration.</p>';
-    h += '<div style="margin-top:12px"><button class="btn-x danger" data-act="resetData">Réinitialiser</button></div></section>';
+    h += '<section class="set-block"><h2>Migration — importer les données locales</h2>';
+    h += '<p class="video-note">Importe en une seule fois le catalogue, les commandes et les réglages déjà présents dans CE navigateur vers Supabase — uniquement si le cloud est vide, rien n’est écrasé. Idéal après la première exécution du schéma.</p>';
+    h += '<div style="margin-top:12px"><button class="btn-x" data-act="importLocal">Importer les données locales vers Supabase</button></div>';
+    h += '</section>';
+    h += '<section class="set-block"><h2>Cache local</h2>';
+    h += '<p class="video-note">Réinitialise uniquement le cache de CE navigateur (produits, commandes, panier). Les données Supabase sont conservées.</p>';
+    h += '<div style="margin-top:12px"><button class="btn-x danger" data-act="resetData">Réinitialiser le cache local</button></div></section>';
     h += '</div>';
     return h;
   }
@@ -636,22 +654,16 @@
 
   function sizeRowsHTML() { return '<div class="row-ed" style="grid-template-columns:1fr 1fr auto"><input class="mini-inp size-name" placeholder="Taille (ex. M / 38 / Unique)" /><input class="mini-inp size-stock" type="number" min="0" placeholder="Stock" /><button type="button" class="del" data-del="size" aria-label="Retirer">' + ico("x") + "</button></div>"; }
   function colorRowHTML() { return '<div class="row-ed" style="grid-template-columns:auto 1fr auto"><div class="color-pair"><input type="color" value="#E7D3B8" /><input class="mini-inp color-label" placeholder="Nom (ex. Champagne)" /></div><button type="button" class="del" data-del="color" aria-label="Retirer">' + ico("x") + "</button></div>"; }
-  function imageRowHTML() { return '<div class="row-ed"><input class="mini-inp image-url" placeholder="https://… (image du produit)" /><button type="button" class="del" data-del="image" aria-label="Retirer">' + ico("x") + "</button></div>"; }
 
   function productForm(p) {
     var colors = (p && p.colors && p.colors.length) ? p.colors : [{ hex: "#E7D3B8", label: "Champagne" }];
     var sizes = (p && p.sizes && p.sizes.length) ? p.sizes : [{ name: "M", stock: 0 }];
-    var images = (p && p.images && p.images.length) ? p.images : [""];
     var colorsHTML = colors.map(function (c) {
       return '<div class="row-ed" style="grid-template-columns:auto 1fr auto"><div class="color-pair"><input type="color" value="' + esc(c.hex) + '" /><input class="mini-inp color-label" placeholder="Nom (ex. Champagne)" value="' + esc(c.label) + '" /></div><button type="button" class="del" data-del="color" aria-label="Retirer">' + ico("x") + "</button></div>";
     }).join("");
     var sizesHTML = sizes.map(function (sz) {
       return '<div class="row-ed" style="grid-template-columns:1fr 1fr auto"><input class="mini-inp size-name" placeholder="Taille (ex. M / 38 / Unique)" value="' + esc(sz.name) + '" /><input class="mini-inp size-stock" type="number" min="0" value="' + esc(sz.stock) + '" /><button type="button" class="del" data-del="size" aria-label="Retirer">' + ico("x") + "</button></div>";
     }).join("");
-    var imagesHTML = images.map(function (u) {
-      return '<div class="row-ed"><input class="mini-inp image-url" placeholder="https://… (image du produit)" value="' + esc(u) + '" /><button type="button" class="del" data-del="image" aria-label="Retirer">' + ico("x") + "</button></div>";
-    }).join("");
-    var noImgHint = !p || !(p.images && p.images.length);
     return modalHead(p ? p.name : "Nouveau produit", p ? "Modifiez les informations puis enregistrez." : "Complétez les informations puis enregistrez.") +
       '<div class="modal-body">' +
       '<div class="modal-err" id="m-err"></div>' +
@@ -668,9 +680,13 @@
       '<div class="fld"><span class="lbl">Tailles & stock (une ligne par variante)</span><div class="list-ed" id="m-sizes">' + sizesHTML + "</div>" +
       '<button type="button" class="add-line" data-add="size">' + ico("plus") + "Ajouter une taille</button>" +
       '<span class="hint">Le stock total (somme des tailles) est déduit à chaque commande confirmée.</span></div>' +
-      '<div class="fld"><span class="lbl">Images du produit (URLs)</span><div class="list-ed" id="m-images">' + imagesHTML + "</div>" +
-      '<button type="button" class="add-line" data-add="image">' + ico("plus") + "Ajouter une image</button>" +
-      (noImgHint ? '<span class="hint">Aucune image : un visuel « soie » généré est utilisé automatiquement. Collez des URLs d’images pour les remplacer.</span>' : "") +
+      '<div class="fld"><span class="lbl">Images du produit (téléversement direct)</span><div class="img-grid" id="m-images" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px"></div>' +
+      '<div class="hint" id="m-img-progress" style="display:none;margin:6px 0 0"></div>' +
+      '<div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
+      '<button type="button" class="add-line" data-add="imageUpload" style="margin:0">' + ico("upload") + "Téléverser des images</button>" +
+      '<span class="hint">JPG · JPEG · PNG · WEBP · SVG — 8 Mo max par image. La première image est la principale (réordonnez avec les flèches).</span>' +
+      "</div>" +
+      '<input type="file" id="m-img-file" accept="image/jpeg,image/png,image/webp,image/svg+xml" multiple style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" />' +
       "</div>" +
       "</div>" +
       modalFoot('<button class="btn-x ghost" data-mact="close">Annuler</button>' +
@@ -678,7 +694,61 @@
   }
   function openProductEditor(id) {
     var p = id ? BL.getProduct(id) : null;
+    state.editingId = id || null;
+    state.formImages = (p && p.images && p.images.length) ? p.images.slice() : [];
     openModal(productForm(p));
+    renderImageEditor();
+  }
+  var IMG_BTN = "font-size:12px;width:22px;height:22px;line-height:1;border:0;border-radius:4px;background:rgba(255,255,255,.92);color:#3b2f24;cursor:pointer;margin:0 1px";
+  function renderImageEditor() {
+    var box = document.getElementById("m-images");
+    if (!box) return;
+    var arr = state.formImages || [];
+    box.innerHTML = arr.map(function (u, i) {
+      var isMain = i === 0;
+      return '<div style="position:relative;width:88px" data-imgcell="' + i + '">' +
+        '<div style="width:88px;height:88px;border-radius:6px;overflow:hidden;border:1px solid rgba(33,27,21,.14);background:#f0e8da"><img src="' + esc(u) + '" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display=\'none\'" /></div>' +
+        (isMain ? '<span style="position:absolute;top:4px;left:4px;background:rgba(20,15,10,.65);color:#fff;font-size:9px;padding:1px 5px;border-radius:3px;letter-spacing:.04em">Principale</span>' : "") +
+        '<div style="position:absolute;inset:auto 0 0 0;display:flex;justify-content:center;gap:2px;padding:4px;background:linear-gradient(transparent,rgba(20,15,10,.55));border-radius:0 0 6px 6px">' +
+        '<button type="button" data-img="main" data-idx="' + i + '" title="Image principale" style="' + IMG_BTN + '">★</button>' +
+        '<button type="button" data-img="left" data-idx="' + i + '" title="Déplacer à gauche" style="' + IMG_BTN + '">‹</button>' +
+        '<button type="button" data-img="right" data-idx="' + i + '" title="Déplacer à droite" style="' + IMG_BTN + '">›</button>' +
+        '<button type="button" data-img="rm" data-idx="' + i + '" title="Retirer" style="' + IMG_BTN + '">✕</button>' +
+        "</div></div>";
+    }).join("");
+    if (!arr.length) box.innerHTML = '<span class="hint">Aucune image — un visuel « soie » généré est utilisé tant que vous n’en ajoutez pas.</span>';
+  }
+  function handleImageFiles(input) {
+    var files = input ? input.files : null;
+    if (input) input.value = "";
+    if (!files || !files.length) return;
+    if (!cloudAuthed()) { toast("Connectez-vous avec le compte admin pour téléverser des images.", "err"); return; }
+    if (!state.formImages) state.formImages = [];
+    var pid = state.editingId || ("new-" + new Date().getTime().toString(36));
+    var progressEl = document.getElementById("m-img-progress");
+    var done = 0;
+    var arr = Array.prototype.slice.call(files);
+    toast("Téléversement des images…");
+    var chain = Promise.resolve();
+    arr.forEach(function (f) {
+      chain = chain.then(function () {
+        return BL.cloud.admin.uploadProductImage(f, pid, state.formImages.length + done, function (pct) {
+          if (progressEl) { progressEl.style.display = ""; progressEl.textContent = "Téléversement : " + pct + "% — ne fermez pas la fenêtre."; }
+        }).then(function (url) {
+          done++;
+          state.formImages.push(url);
+          if (progressEl) progressEl.style.display = "none";
+          renderImageEditor();
+        });
+      });
+    });
+    chain.then(function () {
+      renderImageEditor();
+      toast(arr.length > 1 ? "Images téléversées — enregistrez le produit pour appliquer." : "Image téléversée — enregistrez le produit pour appliquer.", "ok");
+    }).catch(function (err) {
+      if (progressEl) progressEl.style.display = "none";
+      toast("Téléversement impossible : " + ((err && err.message) || "erreur"), "err");
+    });
   }
 
   function adjustForm(p, direction) {
@@ -743,21 +813,42 @@
       for (var i = 0; i < p.sizes.length; i++) if (p.sizes[i].name === name) return p.sizes[i];
       return null;
     }
-    if (mode === "addAll") { p.sizes.forEach(function (sz) { sz.stock += qty; }); }
+    var deltas = [];   /* {size, delta} */
+    if (mode === "addAll") { p.sizes.forEach(function (sz) { deltas.push({ size: sz.name, delta: qty }); }); }
     else if (mode === "addOne") {
       var a1 = byName($("m-size").value);
       if (!a1) { toast("Taille introuvable.", "err"); return; }
-      a1.stock += qty;
+      deltas.push({ size: a1.name, delta: qty });
     } else if (mode === "subOne") {
       var a2 = byName($("m-size").value);
       if (!a2) { toast("Taille introuvable.", "err"); return; }
       if (a2.stock < qty) { toast("Impossible : seulement " + a2.stock + " en stock pour cette taille.", "err"); return; }
-      a2.stock -= qty;
+      deltas.push({ size: a2.name, delta: -qty });
     } else if (mode === "setOne") {
       var a3 = byName($("m-size").value);
       if (!a3) { toast("Taille introuvable.", "err"); return; }
-      a3.stock = qty;
+      deltas.push({ size: a3.name, delta: qty - a3.stock });
     }
+    if (cloudAuthed()) {
+      var chain = Promise.resolve();
+      deltas.forEach(function (d) {
+        chain = chain.then(function () { return BL.cloud.admin.changeStock(p.id, d.size, d.delta); });
+      });
+      chain.then(function () { return refreshAdminData(true); }).then(function () {
+        closeModal();
+        toast("Stock ajusté dans Supabase.", "ok");
+        repaint();
+      }).catch(function (err) {
+        closeModal();
+        toast("Ajustement Supabase impossible : " + ((err && err.message) || "erreur") + " — stock non modifié.", "err");
+        refreshAdminData(true).then(repaint, repaint);
+      });
+      return;
+    }
+    deltas.forEach(function (d) {
+      var sz = byName(d.size);
+      if (sz) sz.stock = Math.max(0, sz.stock + d.delta);
+    });
     BL.saveDB();
     var emptied = BL.syncAvailability();
     closeModal();
@@ -798,19 +889,42 @@
       sizes.push({ name: n, stock: s });
     }
     if (!sizes.length) return fail("Ajoutez au moins une taille.");
-    var imageRows = Array.prototype.slice.call(document.querySelectorAll("#m-images .row-ed"));
-    var images = [];
-    imageRows.forEach(function (row) {
-      var u = (row.querySelector(".image-url").value || "").trim();
-      if (u) images.push(u);
-    });
     var avail = $("m-avail").checked;
+    var images = (state.formImages || []).slice();
     var existing = state.editingId ? BL.getProduct(state.editingId) : null;
-    var p = BL.upsertProduct({ id: existing ? existing.id : null, name: name, cat: cat, price: price, oldPrice: oldV === "" ? null : oldV, desc: desc, colors: colors, sizes: sizes, images: images, available: avail });
-    closeModal();
-    toast((existing ? "Produit mis à jour : " : "Produit créé : ") + p.name + ".", "ok");
-    repaint();
+    var form = { id: existing ? existing.id : null, name: name, cat: cat, price: price, oldPrice: oldV === "" ? null : oldV, desc: desc, colors: colors, sizes: sizes, images: images, available: avail };
+    if (!cloudAuthed()) {
+      var pLocal = BL.upsertProduct(form);
+      closeModal();
+      toast((existing ? "Produit mis à jour : " : "Produit créé : ") + pLocal.name + ".", "ok");
+      repaint();
+      return;
+    }
+    /* Cloud path: save to Supabase FIRST — the mirror only changes on success
+     * (the UI never claims a product was saved when the database refused). */
+    var oldCopy = existing ? JSON.parse(JSON.stringify(existing)) : null;
+    var candidate = BL.upsertProduct(form);
+    BL.cloud.admin.saveProduct(candidate).then(function () {
+      return refreshAdminData(true);
+    }).then(function () {
+      closeModal();
+      toast((existing ? "Produit mis à jour : " : "Produit créé : ") + candidate.name + ".", "ok");
+      repaint();
+    }).catch(function (err) {
+      try {
+        var list = BL.getProducts();
+        var idx = -1;
+        for (var i = 0; i < list.length; i++) if (list[i].id === candidate.id) { idx = i; break; }
+        if (oldCopy) { if (idx > -1) list[idx] = oldCopy; }
+        else if (idx > -1) list.splice(idx, 1);
+        BL.saveDB();
+      } catch (e2) { /* mirror left best-effort */ }
+      closeModal();
+      toast("Enregistrement Supabase impossible : " + ((err && err.message) || "erreur") + " — le produit n'a pas été modifié.", "err");
+      repaint();
+    });
   }
+
   function toneForHex(hex) {
     var map = [
       ["#C79A90", "rose"], ["#E6C9C2", "blush"], ["#E7D3B8", "champagne"], ["#F1E7D8", "ivory"],
@@ -852,11 +966,10 @@
     state.video.saving = true;
     state.video.pct = 0;
     paint();
-    var cfg = BL.supabaseCfg();
-    if (cfg.url && cfg.anonKey) {
-      /* Cloud path: upload to Supabase (upsert the SAME object → stable public
-       * URL). Only on success do we mark the video as published. */
-      BL.supabaseUploadHero(f, function (pct) {
+    if (cloudAuthed()) {
+      /* Cloud path: authenticated upload to Supabase (upsert the SAME object →
+       * stable public URL). Only on success is the video marked as published. */
+      BL.cloud.admin.uploadHero(f, function (pct) {
         state.video.pct = pct;
         var fill = document.querySelector('#content .progress .fill');
         var pctEl = document.querySelector('#content .progress .pct');
@@ -925,8 +1038,15 @@
   }
   function removeVideo() {
     confirmModal('Retirer la vidéo d’accueil ?', '<p style="font-size:13px;color:var(--espresso);line-height:1.7">La vidéo sera supprimée du stockage cloud et la page d’accueil retrouvera son fond par défaut (image soie). Vous pourrez publier une nouvelle vidéo à tout moment.</p>', 'Retirer la vidéo', true, function () {
-      /* Delete the cloud object first — only then clear the local reference. */
-      BL.supabaseRemoveHero().then(function () {
+      /* Delete the cloud object first (admin session) — then clear the local
+       * reference. An absent object counts as already removed. */
+      var step = cloudAuthed()
+        ? BL.cloud.admin.removeHero().catch(function (err) {
+            if (err && /not found/i.test(err.message || "")) return true;
+            throw err;
+          })
+        : Promise.resolve(true);
+      step.then(function () {
         return BL.heroRemove().catch(function () { return true; });
       }).then(function () {
         var s = BL.settings();
@@ -937,7 +1057,7 @@
         toast('Vidéo retirée. Fond par défaut réactivé.', 'ok');
         paint();
       }).catch(function (err) {
-        toast('Suppression impossible : ' + (err && err.message ? err.message : 'erreur') + ' — la vidéo reste active.', 'err');
+        toast('Suppression impossible : ' + ((err && err.message) || 'erreur') + ' — la vidéo reste active.', 'err');
       });
     });
   }
@@ -951,13 +1071,22 @@
       var type = act.getAttribute("data-act"), id = act.getAttribute("data-id");
       if (type === "toggle") { state.expanded = (state.expanded === id) ? null : id; repaint(); return; }
       if (type === "verify") {
-        var r = BL.verifyPayment(id);
-        toast(r.ok ? "Paiement vérifié — commande confirmée." : r.error, r.ok ? "ok" : "err");
-        repaint(); return;
+        if (!cloudAuthed()) { var rv = BL.verifyPayment(id); toast(rv.ok ? "Paiement vérifié — commande confirmée." : rv.error, rv.ok ? "ok" : "err"); repaint(); return; }
+        BL.cloud.admin.verifyPayment(id).then(function () { return refreshAdminData(true); }).then(function () {
+          toast("Paiement vérifié — commande confirmée.", "ok"); repaint();
+        }).catch(function (err) {
+          toast("Vérification Supabase impossible : " + ((err && err.message) || "erreur"), "err");
+        });
+        return;
       }
       if (type === "reject") {
-        BL.rejectPayment(id);
-        toast("Paiement refusé.", "ok"); repaint(); return;
+        if (!cloudAuthed()) { BL.rejectPayment(id); toast("Paiement refusé.", "ok"); repaint(); return; }
+        BL.cloud.admin.rejectPayment(id).then(function () { return refreshAdminData(true); }).then(function () {
+          toast("Paiement refusé.", "ok"); repaint();
+        }).catch(function (err) {
+          toast("Refus Supabase impossible : " + ((err && err.message) || "erreur"), "err");
+        });
+        return;
       }
       if (type === "cancel") { confirmCancelOrder(id); return; }
       if (type === "status") { /* handled on change */ return; }
@@ -993,7 +1122,7 @@
         document.body.appendChild(a);
         a.click();
         setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
-        toast("Fichier « " + name + " » téléchargé — placez-le à la racine du site puis redéployez.", "ok");
+        toast("Copie de sauvegarde « " + name + " » téléchargée — la vidéo publiée reste gérée depuis cet écran.", "ok");
       }
       if (type === "saveVideo") { saveVideo(); return; }
       if (type === "cancelVideo") {
@@ -1166,11 +1295,8 @@
     var addBtn = ev.target.closest ? ev.target.closest("[data-add]") : null;
     if (addBtn) {
       var kind = addBtn.getAttribute("data-add");
-      var listEl = $("m-" + (kind === "size" ? "sizes" : kind === "color" ? "colors" : "images"));
-      if (!listEl) return;
-      if (kind === "size") listEl.insertAdjacentHTML("beforeend", sizeRowsHTML());
-      else if (kind === "color") listEl.insertAdjacentHTML("beforeend", colorRowHTML());
-      else listEl.insertAdjacentHTML("beforeend", imageRowHTML());
+      if (kind === "size") { var ls = $("m-sizes"); if (ls) ls.insertAdjacentHTML("beforeend", sizeRowsHTML()); }
+      else if (kind === "color") { var lc = $("m-colors"); if (lc) lc.insertAdjacentHTML("beforeend", colorRowHTML()); }
       return;
     }
     var delBtn = ev.target.closest ? ev.target.closest("[data-del]") : null;
@@ -1182,12 +1308,24 @@
   function confirmCancelOrder(id) {
     var o = BL.findOrder(id);
     if (!o) return;
-    confirmModal("Annuler la commande " + o.id + " ?", "<p style=\"font-size:13px;color:var(--espresso);line-height:1.7\">Le stock des articles sera restitué au catalogue (si les produits existent toujours). La commande reste dans l’historique, marquée « Annulée ».</p>", "Annuler la commande", true, function () {
-      var r = BL.setOrderStatus(id, "cancelled");
-      if (r.ok) {
-        toast(r.warnings && r.warnings.length ? "Commande annulée — " + r.warnings.join(" · ") : "Commande annulée — stock restitué.", r.warnings && r.warnings.length ? "err" : "ok");
-      } else toast(r.error || "Impossible d’annuler.", "err");
-      repaint();
+    confirmModal("Annuler la commande " + o.id + " ?", "<p style=\"font-size:13px;color:var(--espresso);line-height:1.7\">Le stock des articles sera restitué au catalogue (si les produits existent toujours). La commande reste dans l’historique, marquée « Annulée ». L’annulation est appliquée exactement une fois.</p>", "Annuler la commande", true, function () {
+      if (!cloudAuthed()) {
+        var r0 = BL.setOrderStatus(id, "cancelled");
+        if (r0.ok) toast(r0.warnings && r0.warnings.length ? "Commande annulée — " + r0.warnings.join(" · ") : "Commande annulée — stock restitué.", r0.warnings && r0.warnings.length ? "err" : "ok");
+        else toast(r0.error || "Impossible d’annuler.", "err");
+        repaint();
+        return;
+      }
+      BL.cloud.admin.setOrderStatus(id, "cancelled").then(function (res) {
+        return refreshAdminData(true).then(function () { return res; });
+      }).then(function (res) {
+        var w = (res && res.warnings) || [];
+        toast(w.length ? "Commande annulée — " + w.join(" · ") : "Commande annulée — stock restitué.", w.length ? "err" : "ok");
+        repaint();
+      }).catch(function (err) {
+        toast("Annulation Supabase impossible : " + ((err && err.message) || "erreur"), "err");
+        repaint();
+      });
     });
   }
 
@@ -1201,10 +1339,23 @@
       if (!o) return;
       var next = act.value;
       if (next === "cancelled") { confirmCancelOrder(id); act.value = o.orderStatus; return; }
-      var r = BL.setOrderStatus(id, next);
-      if (!r.ok) { toast(r.error || "Changement impossible.", "err"); act.value = o.orderStatus; return; }
-      toast("Statut : " + BL.STATUS_FR[next] + ".", "ok");
-      repaint();
+      if (!cloudAuthed()) {
+        var r = BL.setOrderStatus(id, next);
+        if (!r.ok) { toast(r.error || "Changement impossible.", "err"); act.value = o.orderStatus; return; }
+        toast("Statut : " + BL.STATUS_FR[next] + ".", "ok");
+        repaint();
+        return;
+      }
+      BL.cloud.admin.setOrderStatus(id, next).then(function (res) {
+        return refreshAdminData(true).then(function () { return res; });
+      }).then(function (res) {
+        var w = (res && res.warnings) || [];
+        toast((w.length ? "Statut : " + BL.STATUS_FR[next] + " (" + w.join(" · ") + ")." : "Statut : " + BL.STATUS_FR[next] + "."), w.length ? "err" : "ok");
+        repaint();
+      }).catch(function (err) {
+        toast("Changement Supabase impossible : " + ((err && err.message) || "erreur"), "err");
+        act.value = o.orderStatus;
+      });
     }
   }
   function onInput(ev) {
@@ -1228,28 +1379,87 @@
     });
   }
 
+  function refreshAdminData(silent) {
+    if (!cloudAuthed()) return Promise.resolve(false);
+    return BL.cloud.admin.refreshAll().then(function () {
+      if (!silent) toast("Données synchronisées depuis Supabase.", "ok");
+      return true;
+    }).catch(function (err) {
+      /* schema/RLS not applied yet, or network: keep the local mirror visible */
+      if (!silent) toast("Supabase inaccessible : " + ((err && err.message) || "vérifiez le schéma (SETUP.md).") + " — affichage local.", "err");
+      return false;
+    });
+  }
   function boot() {
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", boot);
       return;
     }
-    /* make sure demo db exists */
     BL.db();
     initChrome();
-    if (sessionStorage.getItem("bl.admin.ok") === "1") { unlock(); }
-    else { $("pin-screen").hidden = false; $("pin-input").focus(); }
+    if (cloudAuthed()) { unlock(); return; }
+    var scr = $("auth-screen");
+    if (scr) scr.hidden = false;
+    var em = $("auth-email");
+    if (em) em.focus();
+    var hint = $("auth-hint");
+    if (hint && !cloudReady()) hint.textContent = "Stockage Supabase non configuré — la connexion n’est pas possible tant que SUPABASE_URL / SUPABASE_ANON_KEY (ou supabase-config.js) ne sont pas définis.";
   }
   function unlock() {
-    sessionStorage.setItem("bl.admin.ok", "1");
-    $("pin-screen").hidden = true;
+    try { sessionStorage.setItem("bl.admin.ok", "1"); } catch (e) { /* ignore */ }
+    var scr = $("auth-screen");
+    if (scr) scr.hidden = true;
     paint();
+    /* replace the local cache with the real cloud state, then repaint */
+    refreshAdminData(true).then(function () { repaint(); }, function () { repaint(); });
   }
-  function onPinSubmit() {
-    var val = $("pin-input").value;
-    var s = BL.settings();
-    var err = $("pin-err");
-    if (val === s.pin) { $("pin-input").value = ""; unlock(); }
-    else { err.textContent = "Code incorrect. Réessayez."; $("pin-input").value = ""; $("pin-input").focus(); }
+  function authSubmit() {
+    var email = $("auth-email") ? $("auth-email").value.trim() : "";
+    var pass = $("auth-password") ? $("auth-password").value : "";
+    var err = $("auth-err");
+    var btn = $("auth-submit");
+    if (!email || !pass) { if (err) err.textContent = "Saisissez votre e-mail et votre mot de passe."; return; }
+    if (!cloudReady()) { if (err) err.textContent = "Stockage cloud non configuré — connexion impossible."; return; }
+    if (btn) { btn.disabled = true; btn.textContent = "Connexion…"; }
+    if (err) err.textContent = "";
+    BL.cloud.signIn(email, pass).then(function () {
+      if (!cloudAuthed()) {
+        if (err) err.textContent = "Ce compte n’a pas le rôle administrateur. Créez/promouvez le compte via le SQL de promotion (voir SETUP.md), puis reconnectez-vous.";
+        return BL.cloud.signOut().then(function () {
+          if (btn) { btn.disabled = false; btn.textContent = "Se connecter"; }
+          if (email) { var em2 = $("auth-email"); if (em2) em2.value = ""; }
+        });
+      }
+      if (btn) { btn.disabled = false; btn.textContent = "Se connecter"; }
+      unlock();
+    }).catch(function (e2) {
+      if (err) err.textContent = (e2 && e2.message) || "Connexion impossible.";
+      if (btn) { btn.disabled = false; btn.textContent = "Se connecter"; }
+    });
+  }
+  function logout() {
+    var done = function () {
+      try { sessionStorage.removeItem("bl.admin.ok"); } catch (e) { /* ignore */ }
+      window.location.reload();
+    };
+    if (window.BL.cloud && BL.cloud.signOut) BL.cloud.signOut().then(done, done);
+    else done();
+  }
+  function importLocalData() {
+    if (!cloudAuthed()) { toast("Connectez-vous avec le compte admin d’abord.", "err"); return; }
+    confirmModal("Importer les données locales vers Supabase ?", "<p style=\"font-size:13px;color:var(--espresso);line-height:1.7\">Le catalogue, les commandes et les réglages stockés dans CE navigateur seront importés vers Supabase — uniquement si le cloud est vide. Aucune donnée cloud n’est écrasée.</p>", "Importer", false, function () {
+      toast("Import en cours…", "ok");
+      BL.cloud.admin.importLocal().then(function (rep) {
+        return refreshAdminData(true).then(function () { return rep; });
+      }).then(function (rep) {
+        var msgs = (rep || []).join(" · ");
+        toast(msgs ? "Import terminé : " + msgs : "Import terminé (rien à importer).", "ok");
+        repaint();
+      }).catch(function (err) {
+        toast("Import impossible : " + ((err && err.message) || "erreur"), "err");
+        repaint();
+      });
+    });
   }
 
   document.addEventListener("click", function (ev) {
@@ -1260,8 +1470,42 @@
   document.addEventListener("change", onChange);
   document.addEventListener("input", onInput);
 
-  var pf = document.getElementById("pin-form");
-  if (pf) pf.addEventListener("submit", function (ev) { ev.preventDefault(); onPinSubmit(); });
+  var af = document.getElementById("auth-form");
+  if (af) af.addEventListener("submit", function (ev) { ev.preventDefault(); authSubmit(); });
+  var lb = document.getElementById("logout-btn");
+  if (lb) lb.addEventListener("click", logout);
+
+  /* product-image editor + extra cloud actions (kept out of the big handler) */
+  document.addEventListener("click", function (ev) {
+    if (!ev.target || !ev.target.closest) return;
+    var t = ev.target;
+    var ib = t.closest("[data-img]");
+    if (ib && ib.closest("#modal-root")) {
+      var idx = parseInt(ib.getAttribute("data-idx"), 10);
+      var img = ib.getAttribute("data-img");
+      var arr = state.formImages || [];
+      if (img === "rm") { arr.splice(idx, 1); }
+      else if (img === "main") { if (idx > 0) { var u0 = arr.splice(idx, 1)[0]; arr.unshift(u0); } }
+      else if (img === "left") { if (idx > 0) { var t0 = arr[idx]; arr[idx] = arr[idx - 1]; arr[idx - 1] = t0; } }
+      else if (img === "right") { if (idx < arr.length - 1) { var t1 = arr[idx]; arr[idx] = arr[idx + 1]; arr[idx + 1] = t1; } }
+      renderImageEditor();
+      return;
+    }
+    if (t.closest('[data-add="imageUpload"]')) {
+      var fi = document.getElementById("m-img-file");
+      if (fi) fi.click();
+      return;
+    }
+    var ax = t.closest("[data-act]");
+    if (ax) {
+      var tx = ax.getAttribute("data-act");
+      if (tx === "importLocal") { importLocalData(); return; }
+      if (tx === "refreshCloud") { refreshAdminData(false).then(repaint, repaint); return; }
+    }
+  });
+  document.addEventListener("change", function (ev) {
+    if (ev.target && ev.target.id === "m-img-file") handleImageFiles(ev.target);
+  });
 
   boot();
 })();

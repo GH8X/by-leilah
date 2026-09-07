@@ -1052,6 +1052,64 @@
   function productHref(p) { return "product.html?p=" + encodeURIComponent(p.slug); }
 
   /* ============================================================
+   * 13b. Cloud-sync hooks (consumed by cloud.js — additive only)
+   * ------------------------------------------------------------
+   * The synchronous BL.* mirror stays the UI source. cloud.js replaces the
+   * mirror with Supabase data (applyCatalog / applyCloudSettings /
+   * applyOrders) and pages defer their first render until the initial sync
+   * settles through BL.whenReady(init). When cloud.js is absent (offline
+   * dev, tests) whenReady() resolves immediately on the local mirror.
+   * ============================================================ */
+  var cloudReadyHook = null;
+  function setCloudReadyHook(fn) { cloudReadyHook = (typeof fn === "function") ? fn : null; }
+  function whenReady(fn) {
+    function run() {
+      var gate = cloudReadyHook ? cloudReadyHook() : null;
+      Promise.resolve(gate).then(function () {
+        try { fn(); } catch (e) { /* never break the page */ }
+      });
+    }
+    try {
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { run(); });
+      else run();
+    } catch (e) { run(); }
+  }
+  /* Replace the product mirror with cloud rows (already hydrated to the
+   * local product shape by cloud.js). Keeps localStorage in sync too. */
+  function applyCatalog(products) {
+    var d = db();
+    d.products = Array.isArray(products) ? products.slice() : [];
+    return saveDB();
+  }
+  /* Merge cloud website_settings into the local settings object. Only the
+   * cloud-managed public keys are applied — local config keys (heroVideoUrl,
+   * supabase, pin) are never overwritten by the cloud. */
+  function applyCloudSettings(cloudData) {
+    if (!cloudData || typeof cloudData !== "object") return false;
+    var s = settings();
+    var keys = ["contact", "about", "newSection", "comingSoon", "socials", "theme"];
+    for (var i = 0; i < keys.length; i++) {
+      if (cloudData[keys[i]] !== undefined) s[keys[i]] = cloudData[keys[i]];
+    }
+    return saveSettings(s);
+  }
+  /* Replace the orders mirror (admin feed from bl_list_orders). */
+  function applyOrders(list) {
+    var d = db();
+    d.orders = Array.isArray(list) ? list.slice() : [];
+    return saveDB();
+  }
+  /* Deep snapshot of the current LOCAL mirror — offered once by the admin
+   * console to import the pre-existing browser data into an empty cloud. */
+  function cloudExport() {
+    var d = db();
+    return JSON.parse(JSON.stringify({
+      products: d.products || [],
+      orders: d.orders || [],
+      settings: readLS(LS.SETTINGS, null),
+    }));
+  }
+  /* ============================================================
    * 14. Export
    * ============================================================ */
   /* ============================================================
@@ -1106,5 +1164,9 @@
     esc: esc, money: money, fmtDate: fmtDate, humanSize: humanSize,
     toast: toast, refreshBagBadges: refreshBagBadges,
     cardMediaHTML: cardMediaHTML, swatchesHTML: swatchesHTML, productHref: productHref,
+    /* cloud-sync hooks (cloud.js) */
+    setCloudReadyHook: setCloudReadyHook, whenReady: whenReady,
+    applyCatalog: applyCatalog, applyCloudSettings: applyCloudSettings,
+    applyOrders: applyOrders, cloudExport: cloudExport,
   };
 })();

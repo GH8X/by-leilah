@@ -795,6 +795,7 @@
 
 <script src="supabase-config.js"></script>
 <script src="store.js"></script>
+<script src="cloud.js"></script>
 <script>
 (function () {
   "use strict";
@@ -837,11 +838,25 @@
         }
       }
     }
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", function () { setTimeout(run, 0); });
-    } else {
-      setTimeout(run, 0);
+    /* Keep the product grids invisible until the first (possibly cloud-fed)
+     * render completes: the legacy static block below paints hardcoded cards
+     * at DOMContentLoaded and would otherwise flash while we wait for the
+     * Supabase catalogue. */
+    var gridIds = ["featured-grid", "pajama-strip", "look-list"];
+    var i;
+    for (i = 0; i < gridIds.length; i++) {
+      var g0 = byId(gridIds[i]);
+      if (g0) g0.style.visibility = "hidden";
     }
+    var liveRun = run;
+    run = function () {
+      liveRun();
+      for (var j = 0; j < gridIds.length; j++) {
+        var g1 = byId(gridIds[j]);
+        if (g1) g1.style.visibility = "";
+      }
+    };
+    BL.whenReady(run);
     onLoad(run);
   })();
 

@@ -11,7 +11,7 @@ import { pathToFileURL } from "node:url";
 
 const root = process.cwd();
 const PAGES = ["index.html", "shop.html", "product.html", "bag.html", "checkout.html", "admin.html"];
-const SHARED_JS = ["store.js", "admin-app.js"];
+const SHARED_JS = ["store.js", "admin-app.js", "cloud.js", "supabase-config.js"];
 let failures = 0;
 
 function ok(msg) { console.log("  ✔", msg); }
@@ -87,6 +87,22 @@ if (/pin:\s*"admin"|s\.pin\s*=\s*"admin"/.test(storeJs)) {
   fail("store.js still contains a hardcoded 'admin' default PIN");
 } else {
   ok("no hardcoded default admin PIN in store.js");
+}
+
+console.log("Supabase public config:");
+const sbConfigPath = join(root, "supabase-config.js");
+if (!existsSync(sbConfigPath)) {
+  fail("supabase-config.js missing — the hero video (and any future cloud read) cannot resolve a public URL");
+} else {
+  const sbCode = readFileSync(sbConfigPath, "utf8");
+  if (syntaxCheck("supabase-config.js", sbCode)) {
+    const mUrl = sbCode.match(/url\s*:\s*"([^"]*)"/);
+    const mKey = sbCode.match(/anonKey\s*:\s*"([^"]*)"/);
+    const url = mUrl ? mUrl[1].trim() : "";
+    const key = mKey ? mKey[1].trim() : "";
+    if (url && key) ok("url + anon key present (public-by-design values)");
+    else fail("supabase-config.js must ship a non-empty url and anonKey (blank config breaks the public hero video)");
+  }
 }
 
 console.log(failures ? `\n${failures} problem(s) found.` : "\nAll checks passed.");

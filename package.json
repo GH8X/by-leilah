@@ -3,12 +3,14 @@
   "private": true,
   "version": "1.1.0",
   "type": "module",
-  "description": "by Leïlah — premium women's fashion & pajamas e-commerce (static storefront + admin, persisted in-browser)",
+  "description": "by Leïlah — premium women's fashion & pajamas e-commerce (static storefront + admin; catalogue/orders in a shared browser store, home-hero video + public config via Supabase)",
   "scripts": {
     "dev": "vite",
     "build": "node scripts/build.mjs",
     "check": "node scripts/check.mjs",
     "test": "node scripts/test.mjs",
+    "test:cloud": "node scripts/test-cloud.mjs",
+    "test:dom": "node scripts/test-dom.mjs",
     "typecheck": "node scripts/check.mjs",
     "preview": "vite preview"
   },

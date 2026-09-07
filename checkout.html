@@ -475,6 +475,7 @@
 <div class="toast" id="toast"><span id="toast-text"></span></div>
 
 <script src="store.js"></script>
+<script src="cloud.js"></script>
 <script>
 /* ============================================================
  * Checkout — by Leïlah
@@ -630,15 +631,41 @@
       el("baridi-panel").scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
-    var res = BL.createOrder(
-      { firstName: first, lastName: last, phone: phone, address: address, notes: notes, commune: commune },
-      { wilayaCode: state.wilaya, method: state.method, proof: state.proof, reference: el("f-ref").value.trim() }
-    );
-    if (!res.ok) {
-      toast(res.error || "Commande impossible.", "err");
+    var pbtn = el("place-order");
+    if (pbtn) { pbtn.disabled = true; pbtn.textContent = "Envoi en cours…"; }
+    function restoreBtn() { if (pbtn) { pbtn.disabled = false; pbtn.textContent = "Confirmer la commande"; } }
+    var customerObj = { firstName: first, lastName: last, phone: phone, address: address, notes: notes, commune: commune };
+    var optsObj = { wilayaCode: state.wilaya, method: state.method, proof: state.proof, reference: el("f-ref").value.trim() };
+    var cloudOn = window.BL.cloud && BL.cloud.configured && BL.cloud.configured();
+    if (!cloudOn) {
+      var res = BL.createOrder(customerObj, optsObj);
+      restoreBtn();
+      if (!res.ok) { toast(res.error || "Commande impossible.", "err"); return; }
+      showSuccess(res.order);
       return;
     }
-    showSuccess(res.order);
+    /* Cloud path — the server validates real prices/stock atomically; the
+     * cart is only cleared after the order exists in Supabase. */
+    var view = BL.cartView();
+    var bad = [];
+    for (var vi = 0; vi < view.length; vi++) if (!view[vi].ok) bad.push(view[vi].name + " (" + view[vi].size + ") : " + view[vi].reason);
+    if (bad.length) { restoreBtn(); toast(bad.join(" · "), "err"); return; }
+    BL.cloud.placeOrder({
+      customer: customerObj,
+      wilaya_code: state.wilaya, method: state.method,
+      proof: state.proof, reference: el("f-ref").value.trim(),
+      lines: view.map(function (v) { return { product_id: v.pid, size: v.size, qty: v.qty }; })
+    }).then(function (res2) {
+      if (!res2 || !res2.ok || !res2.order) throw new Error("La commande n'a pas pu être créée.");
+      BL.clearCart();
+      BL.refreshBagBadges(document);
+      restoreBtn();
+      showSuccess(res2.order);
+      try { BL.cloud.syncStorefront({}).catch(function () { /* best-effort refresh */ }); } catch (e2) { /* ignore */ }
+    }).catch(function (err) {
+      restoreBtn();
+      toast((err && err.message) ? err.message : "Commande impossible — votre panier est conservé.", "err");
+    });
   }
 
   function init() {
@@ -720,8 +747,7 @@
     BL.refreshBagBadges(document);
   }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
-  else init();
+  BL.whenReady(init);
 })();
 </script>
 

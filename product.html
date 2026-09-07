@@ -450,6 +450,7 @@
 </footer><div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span id="toast-text">Ajouté au panier</span></div>
 
 <script src="store.js"></script>
+<script src="cloud.js"></script>
 <script>
 /* ============================================================
  * Product page — by Leïlah
@@ -708,8 +709,7 @@
     BL.refreshBagBadges(document);
   }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
-  else init();
+  BL.whenReady(init);
 })();
 </script>
 

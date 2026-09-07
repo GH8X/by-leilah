@@ -379,6 +379,7 @@
         <p class="a-sub">by Leïlah · Produits, stock, commandes, vidéo d’accueil</p>
       </div>
       <a class="a-back" href="index.html" data-ic="arrow"><span data-slot="arrow"></span>Retour à la boutique</a>
+      <button type="button" id="logout-btn" class="a-back" style="background:none;border:0;cursor:pointer;padding:0;margin-left:4px">Déconnexion</button>
     </div>
 
     <div class="a-grid">
@@ -400,26 +401,30 @@
 <!-- ===== admin overlays: PIN gate, modals, toast ===== -->
 <div class="toast" id="toast"><span id="toast-text"></span></div>
 
-<div class="pin-screen" id="pin-screen" hidden>
+<div class="pin-screen" id="auth-screen" hidden>
   <div class="pin-card">
     <div class="pin-logo"><span class="by">by</span>Leïlah</div>
     <h1>Espace administrateur</h1>
-    <p>La console de gestion est réservée à la boutique.<br/>Saisissez votre code d’accès pour continuer.</p>
-    <form class="pin-form" id="pin-form" onsubmit="return false">
-      <input type="password" id="pin-input" autocomplete="off" placeholder="Code d’accès" />
-      <button type="submit">Accéder à l’administration</button>
+    <p>Connexion sécurisée (Supabase Auth).<br/>Réservée au compte administrateur de la boutique.</p>
+    <form class="pin-form" id="auth-form" onsubmit="return false">
+      <input type="email" id="auth-email" autocomplete="username" placeholder="E-mail" />
+      <input type="password" id="auth-password" autocomplete="current-password" placeholder="Mot de passe" />
+      <button type="submit" id="auth-submit">Se connecter</button>
     </form>
-    <p class="pin-err" id="pin-err"></p>
-    <p class="pin-hint" id="pin-hint">Le code d’accès est défini par la variable d’environnement <b>VITE_ADMIN_PIN</b>.</p>
+    <p class="pin-err" id="auth-err"></p>
+    <p class="pin-hint" id="auth-hint">Compte créé dans Supabase → Authentication → Users, puis promu administrateur (voir SETUP.md).</p>
+    <p style="margin-top:16px"><a href="index.html" style="color:var(--espresso);font-size:12px;opacity:.8">← Retour à la boutique</a></p>
   </div>
 </div>
 
 <div class="modal-root" id="modal-root" hidden></div>
 
-<script>/* env-driven admin PIN — Vite remplace %VITE_ADMIN_PIN% ; laissé vide hors build, l’app génère un code provisoire */
+<script>/* env-driven admin PIN — kept for the local-only fallback path; the real
+ * gate is Supabase Auth (see auth-screen above and SETUP.md). */
 window.ADMIN_PIN_ENV = "%VITE_ADMIN_PIN%";</script>
 <script src="supabase-config.js"></script>
 <script src="store.js"></script>
+<script src="cloud.js"></script>
 <script src="admin-app.js"></script>
 <!-- legacy static-preview script kept inert for reference -->
 <script type="text/plain" aria-hidden="true">
@@ -462,7 +467,7 @@ window.ADMIN_PIN_ENV = "%VITE_ADMIN_PIN%";</script>
     'admin.category':'Catégorie','admin.all':'Tous','admin.search':'Rechercher','admin.backToStore':'Retour à la boutique',
     'admin.lowStock':'Stock faible','admin.verifyIntro':'Vérifiez manuellement chaque preuve BaridiMob avant de valider la commande.',
     'admin.noPending':'Aucun paiement en attente de vérification.',
-    'admin.mockNote':'Données de démonstration — à connecter à un backend (Supabase / Firebase).',
+    'admin.mockNote':'Produits, stock et commandes sont enregistrés dans ce navigateur (gérer la boutique depuis un navigateur fixe) ; la vidéo d’accueil est publiée sur Supabase et visible par tous les visiteurs.',
     'payment.cod':'Paiement à la livraison','payment.baridimob':'BaridiMob',
     'paymentStatus.pending':'En attente','paymentStatus.verification_required':'Vérification requise',
     'paymentStatus.verified':'Vérifié','paymentStatus.rejected':'Refusé',
