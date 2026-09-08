@@ -683,10 +683,14 @@
       '<div class="fld"><span class="lbl">Images du produit (téléversement direct)</span><div class="img-grid" id="m-images" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px"></div>' +
       '<div class="hint" id="m-img-progress" style="display:none;margin:6px 0 0"></div>' +
       '<div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
-      '<button type="button" class="add-line" data-add="imageUpload" style="margin:0">' + ico("upload") + "Téléverser des images</button>" +
+      '<label for="m-img-file" class="add-line" data-add="imageUpload" style="margin:0;cursor:pointer">' + ico("upload") + "Téléverser des images</label>" +
       '<span class="hint">JPG · JPEG · PNG · WEBP · SVG — 8 Mo max par image. La première image est la principale (réordonnez avec les flèches).</span>' +
       "</div>" +
-      '<input type="file" id="m-img-file" accept="image/jpeg,image/png,image/webp,image/svg+xml" multiple style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" />' +
+      /* Native file-picker trigger: the <label for> association opens the input
+       * on desktop AND Android Chrome without JS. The input stays a real, inter-
+       * active element (never display:none / pointer-events:none) — hidden only
+       * visually via opacity/positioning. */
+      '<input type="file" id="m-img-file" accept="image/jpeg,image/png,image/webp,image/svg+xml" multiple style="position:absolute;opacity:0;width:1px;height:1px;margin:0;border:0" />' +
       "</div>" +
       "</div>" +
       modalFoot('<button class="btn-x ghost" data-mact="close">Annuler</button>' +
@@ -698,6 +702,12 @@
     state.formImages = (p && p.images && p.images.length) ? p.images.slice() : [];
     openModal(productForm(p));
     renderImageEditor();
+    /* Direct change listener on the input itself (in addition to the delegated
+     * document-level fallback) — some Android WebViews don't reliably deliver
+     * the file change through delegation. The input is re-created on every
+     * modal open, so the listener is attached here each time. */
+    var fi = $("m-img-file");
+    if (fi) fi.addEventListener("change", function () { handleImageFiles(this); });
   }
   var IMG_BTN = "font-size:12px;width:22px;height:22px;line-height:1;border:0;border-radius:4px;background:rgba(255,255,255,.92);color:#3b2f24;cursor:pointer;margin:0 1px";
   function renderImageEditor() {
@@ -719,21 +729,26 @@
     if (!arr.length) box.innerHTML = '<span class="hint">Aucune image — un visuel « soie » généré est utilisé tant que vous n’en ajoutez pas.</span>';
   }
   function handleImageFiles(input) {
-    var files = input ? input.files : null;
-    if (input) input.value = "";
-    if (!files || !files.length) return;
+    if (!input) return;
+    /* Snapshot the FileList into a plain array BEFORE clearing the input value:
+     * input.files is a LIVE list — on Android Chrome (and other mobile engines)
+     * setting input.value = "" empties it, which silently killed the upload
+     * (no preview, no progress, no error). This ordering is the fix. */
+    var arr = Array.prototype.slice.call(input.files || []);
+    try { input.value = ""; } catch (e) { /* ignore */ }
+    if (!arr.length) return;
     if (!cloudAuthed()) { toast("Connectez-vous avec le compte admin pour téléverser des images.", "err"); return; }
     if (!state.formImages) state.formImages = [];
     var pid = state.editingId || ("new-" + new Date().getTime().toString(36));
     var progressEl = document.getElementById("m-img-progress");
     var done = 0;
-    var arr = Array.prototype.slice.call(files);
     toast("Téléversement des images…");
     var chain = Promise.resolve();
     arr.forEach(function (f) {
       chain = chain.then(function () {
+        if (progressEl) { progressEl.style.display = ""; progressEl.textContent = "Téléversement de « " + f.name + " »…"; }
         return BL.cloud.admin.uploadProductImage(f, pid, state.formImages.length + done, function (pct) {
-          if (progressEl) { progressEl.style.display = ""; progressEl.textContent = "Téléversement : " + pct + "% — ne fermez pas la fenêtre."; }
+          if (progressEl) progressEl.textContent = "Téléversement de « " + f.name + " » — " + pct + "% — ne fermez pas la fenêtre.";
         }).then(function (url) {
           done++;
           state.formImages.push(url);
@@ -1492,8 +1507,11 @@
       return;
     }
     if (t.closest('[data-add="imageUpload"]')) {
+      /* The trigger is a <label for="m-img-file">: the browser natively opens
+       * the picker (reliable on Android Chrome). Only fall back to a program-
+       * matic click when the event did NOT originate from that label. */
       var fi = document.getElementById("m-img-file");
-      if (fi) fi.click();
+      if (fi && !t.closest('label[for="m-img-file"]')) fi.click();
       return;
     }
     var ax = t.closest("[data-act]");

@@ -566,9 +566,15 @@
       });
     }
     return chain.then(function (body) {
-      return storageUpload(objectPath, body, {
+      var c = cfg();
+      var bucket = BL.HERO_BUCKET || "byleilah";
+      var storagePath = bucket + "/" + objectPath;
+
+      return storageXhr("PUT", storagePath, {
         "Content-Type": ext === "svg" ? "image/svg+xml" : (file.type || "image/jpeg"),
-      }, onProgress);
+      }, body, onProgress).then(function () {
+        return publicBase(c) + "/" + objectPath;
+      });
     });
   }
   function adminRemoveProductImage(publicUrlOrPath) {
@@ -581,7 +587,8 @@
       /* legacy/remote image — nothing stored in our bucket to delete */
       return Promise.resolve(false);
     }
-    return storageDelete(path).then(function () { return true; });
+    var bucket = BL.HERO_BUCKET || "byleilah";
+    return storageDelete(bucket + "/" + path).then(function () { return true; });
   }
 
   /* ---------------- boot hook for BL.whenReady ---------------- */

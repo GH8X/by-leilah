@@ -11,6 +11,7 @@
     "test": "node scripts/test.mjs",
     "test:cloud": "node scripts/test-cloud.mjs",
     "test:dom": "node scripts/test-dom.mjs",
+    "test:admin": "node scripts/test-admin-upload.mjs",
     "typecheck": "node scripts/check.mjs",
     "preview": "vite preview"
   },
