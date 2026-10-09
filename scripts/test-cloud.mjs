@@ -188,6 +188,15 @@ console.log("Supabase client (cloud.js):");
   t("product upserted via POST on_conflict=id", posts.length >= 1 && posts[0].body.id === "bl-y");
   t("canonical row mapping (category/old_price/colors)", posts[0].body.category === "pajamas" && posts[0].body.old_price === null && posts[0].body.colors.length === 1 && posts[0].body.active === true);
   t("sizes replaced: delete old rows then insert new", sizedels.length === 1 && sizeposts.length === 1 && sizeposts[0].body.product_id === "bl-y" && sizeposts[0].body.stock === 3);
+
+  /* the new Pantalons category rides the SAME products/product_sizes tables and
+   * columns — no schema change, no extra bucket, same admin write path */
+  const pants = { id: "bl-p1", slug: "palazzo-wide-trousers", name: "Palazzo", cat: "pantalons", price: 11900, oldPrice: null, badge: "Nouveau", desc: "d", colors: [{ hex: "#DBC1A9", label: "Nude", tone: "nude" }], sizes: [{ name: "40", stock: 2 }], images: ["https://x.supabase.co/storage/v1/object/public/byleilah/product-images/p1.jpg"], available: true, tone: "nude", mono: "P" };
+  await BL.cloud.admin.saveProduct(pants);
+  const lastPost = calls.filter((c) => c.url.includes("/rest/v1/products") && c.method === "POST").pop();
+  const lastSize = calls.filter((c) => c.url.includes("/rest/v1/product_sizes") && c.method === "POST").pop();
+  t("trousers written with category=pantalons in the products table", !!lastPost && lastPost.body.id === "bl-p1" && lastPost.body.category === "pantalons");
+  t("trousers reuse the existing columns (images/tone/sizes)", !!lastPost && lastPost.body.images.length === 1 && lastPost.body.tone === "nude" && !!lastSize && lastSize.body.name === "40" && lastSize.body.stock === 2);
 }
 
 /* settings write requires an admin session (anonymous storefront never writes) */

@@ -351,5 +351,46 @@ console.log("Settings persistence (env PIN active):");
   t("remove DELETEs the cloud object", del && del.method === "DELETE" && del.url === "https://xyzcompany.supabase.co/storage/v1/object/byleilah/hero/home-hero.mp4");
 }
 
+/* ======================================================================
+ * 12. Pantalons category (new) — sizes, catalogue, bag + checkout
+ * ====================================================================== */
+console.log("Pantalons category:");
+{
+  const ls = makeLS(), BL = loadBL(ls);
+  const keys = BL.CATS.map((c) => c.key);
+  t("CATS exposes pantalons between clothing and shoes", keys.join(",") === "pajamas,clothing,pantalons,shoes,handbags");
+  t("catLabel('pantalons') = Pantalons", BL.catLabel("pantalons") === "Pantalons");
+
+  const pants = BL.getProducts().filter((p) => p.cat === "pantalons");
+  t("seed catalogue ships trousers", pants.length >= 5);
+  t("trousers use numeric waist sizes 36–44", pants.every((p) => p.sizes.map((s) => s.name).join(",") === "36,38,40,42,44"));
+  t("per-size stock still sums to the product stock", pants.every((p) => p.sizes.reduce((n, s) => n + s.stock, 0) === p.stock));
+  t("existing catalogue preserved (ids/prices untouched)", !!BL.getProduct("bl-001") && BL.getProduct("bl-001").price === 12900 && !!BL.getProduct("bl-020") && !!BL.getProduct("bl-033"));
+
+  const p = BL.getProduct("bl-034");
+  const before40 = BL.sizeStock(p, "40");
+  t("trouser has its own per-size stock", before40 > 0);
+  const res = BL.addToCart(p, { size: "40", qty: 2, colorLabel: p.colors[0].label });
+  t("adding a trouser to the bag works (size + colour + qty)", res.ok === true);
+  const view = BL.cartView();
+  t("bag line keeps the numeric size, colour and quantity", view.length === 1 && view[0].size === "40" && view[0].qty === 2 && view[0].product.cat === "pantalons" && view[0].colorLabel === p.colors[0].label);
+  t("over-ordering a trouser size is rejected", BL.addToCart(p, { size: "40", qty: before40, colorLabel: p.colors[0].label }).ok === false);
+  t("a non-trouser size is rejected for trousers", BL.addToCart(p, { size: "M", qty: 1, colorLabel: p.colors[0].label }).ok === false);
+
+  const out = BL.getProduct("bl-039");
+  t("an out-of-stock trouser is unavailable", !!out && out.available === false && BL.isAvail(out) === false);
+  t("adding an out-of-stock trouser is refused", BL.addToCart(out, { size: "36", qty: 1 }).ok === false);
+
+  const filtered = BL.getProducts().filter((x) => x.cat === "pantalons" && (x.name + " " + x.slug + " " + BL.catLabel(x.cat)).toLowerCase().indexOf("palazzo") !== -1);
+  t("category + search filtering finds the trouser", filtered.length === 1 && filtered[0].id === "bl-034");
+
+  const o = BL.createOrder(orderArgs, orderOpts);
+  t("checkout works with a trouser line", o.ok === true && o.order.items[0].size === "40" && o.order.items[0].quantity === 2 && o.order.items[0].price === p.price);
+  t("trouser stock deducted at checkout", BL.sizeStock(BL.getProduct("bl-034"), "40") === before40 - 2);
+
+  const BL2 = loadBL(ls);
+  t("trousers persist across a reload (same browser)", BL2.getProduct("bl-034").cat === "pantalons" && BL2.sizeStock(BL2.getProduct("bl-034"), "40") === before40 - 2);
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) { console.log("Failures:\n - " + failures.join("\n - ")); process.exit(1); }

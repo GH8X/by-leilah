@@ -66,6 +66,16 @@ t("grid shows live catalogue order (Douceur = 4th pajama, not static Étoile)", 
 t("pajama strip populated with live cards", strip && strip.querySelectorAll("article.card").length >= 1);
 t("'Complétez le look' list filled", look && look.children.length >= 1);
 
+/* the Pantalons category is wired into the home page (desktop + mobile + footer) */
+{
+  const hrefs = (sel) => Array.from(doc.querySelectorAll(sel)).map((a) => a.getAttribute("href"));
+  t("home desktop nav offers Pantalons", hrefs("nav.primary a").indexOf("shop.html?cat=pantalons") !== -1);
+  t("home mobile slide menu offers Pantalons", hrefs("nav.menu-nav a").indexOf("shop.html?cat=pantalons") !== -1);
+  t("footer shop list offers Pantalons", hrefs("footer a").indexOf("shop.html?cat=pantalons") !== -1);
+  const tile = doc.querySelector('#categories .cat-tile[href="shop.html?cat=pantalons"]');
+  t("home category tile links to the Pantalons page", !!tile && /Pantalons/.test(tile.textContent));
+}
+
 /* language toggle (legacy behavior preserved) */
 const langBtns = doc.querySelectorAll(".lang button");
 if (langBtns.length) {

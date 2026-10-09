@@ -357,6 +357,7 @@
         <nav class="primary">
           <a href="shop.html?cat=pajamas">Pyjamas</a>
           <a href="shop.html?cat=clothing">Vêtements</a>
+          <a href="shop.html?cat=pantalons">Pantalons</a>
           <a href="shop.html?cat=shoes">Chaussures</a>
           <a href="shop.html?cat=handbags">Sacs</a>
         </nav>
@@ -478,7 +479,7 @@ window.ADMIN_PIN_ENV = "%VITE_ADMIN_PIN%";</script>
     'footer.contact':'Contact','proof.title':'Preuve de paiement','shop.empty':'Aucun produit ne correspond',
     'baridi.storeName':'Nom du magasin','baridi.paymentInfo':'Informations de paiement','baridi.account':'Compte / RIP',
     'baridi.phone':'Téléphone','cta.freeShippingReached':'Vous bénéficiez de la livraison offerte.',
-    'nav.pajamas':'Pyjamas','nav.clothing':'Vêtements','nav.shoes':'Chaussures','nav.completeLooks':'Looks complets','nav.handbags':'Sacs'
+    'nav.pajamas':'Pyjamas','nav.clothing':'Vêtements','nav.pantalons':'Pantalons','nav.shoes':'Chaussures','nav.completeLooks':'Looks complets','nav.handbags':'Sacs'
   };
   function t(k){ return T[k] !== undefined ? T[k] : k; }
 
@@ -493,7 +494,7 @@ window.ADMIN_PIN_ENV = "%VITE_ADMIN_PIN%";</script>
   var DEFAULT_HOME_FEE = 600, FREE_DELIVERY_THRESHOLD = 25000;
 
   // ---------- catalogue (data/products.ts) ----------
-  var CAT = { pajamas:'nav.pajamas', clothing:'nav.clothing', shoes:'nav.shoes', 'complete-looks':'nav.completeLooks', handbags:'nav.handbags' };
+  var CAT = { pajamas:'nav.pajamas', clothing:'nav.clothing', pantalons:'nav.pantalons', shoes:'nav.shoes', 'complete-looks':'nav.completeLooks', handbags:'nav.handbags' };
   var PRODUCTS = [
     {id:'bl-001',name:'Satin Signature Pyjama',slug:'satin-signature-pajama',cat:'pajamas',price:12900,stock:24},
     {id:'bl-002',name:'Nuit de Soie',slug:'nuit-de-soie-long-set',cat:'pajamas',price:14900,stock:12},
@@ -527,7 +528,13 @@ window.ADMIN_PIN_ENV = "%VITE_ADMIN_PIN%";</script>
     {id:'bl-030',name:'Soirée',slug:'soiree-clutch',cat:'handbags',price:9900,stock:8},
     {id:'bl-031',name:'Jour',slug:'jour-everyday-tote',cat:'handbags',price:14900,stock:11},
     {id:'bl-032',name:'Écru',slug:'ecru-crescent-bag',cat:'handbags',price:15900,stock:10},
-    {id:'bl-033',name:'Nomade',slug:'nomade-bucket-bag',cat:'handbags',price:13900,stock:13}
+    {id:'bl-033',name:'Nomade',slug:'nomade-bucket-bag',cat:'handbags',price:13900,stock:13},
+    {id:'bl-034',name:'Palazzo',slug:'palazzo-wide-trousers',cat:'pantalons',price:11900,stock:20},
+    {id:'bl-035',name:'Taille Haute',slug:'taille-haute-droit',cat:'pantalons',price:10900,stock:24},
+    {id:'bl-036',name:'Cigarette',slug:'cigarette-satin',cat:'pantalons',price:9900,stock:18},
+    {id:'bl-037',name:'Lin Doux',slug:'lin-doux-large',cat:'pantalons',price:8900,stock:22},
+    {id:'bl-038',name:'Leïla Tailleur',slug:'leila-tailleur',cat:'pantalons',price:12900,stock:14},
+    {id:'bl-039',name:'Nuit Blanche',slug:'nuit-blanche-satin',cat:'pantalons',price:13900,stock:0}
   ];
 
   // ---------- mock orders (data/mockOrders.ts, verbatim) ----------

@@ -155,6 +155,13 @@ const input = doc.getElementById("m-img-file");
 const progressEl = doc.getElementById("m-img-progress");
 t("modal opened with the file input", !!modalRoot && !modalRoot.hidden && !!input);
 
+/* the editor's category dropdown is driven by BL.CATS: the new Pantalons
+ * category must be selectable exactly like the existing ones */
+const catSel = doc.getElementById("m-cat");
+const catOpts = catSel ? Array.from(catSel.options) : [];
+t("product form offers the Pantalons category", catOpts.some((o) => o.value === "pantalons" && o.textContent === "Pantalons"));
+t("categories are ordered Pyjamas, Vêtements, Pantalons, Chaussures, Sacs", catOpts.map((o) => o.value).join(",") === "pajamas,clothing,pantalons,shoes,handbags");
+
 /* requirement 3 + 4: native label trigger, input stays interactive */
 const label = doc.querySelector('label[for="m-img-file"]');
 t("trigger is a native <label for=\"m-img-file\">", !!label && label.getAttribute("data-add") === "imageUpload");
@@ -177,7 +184,8 @@ function pick(files) {
   input.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
 }
 function lastXhr() { return FakeXHR.instances[FakeXHR.instances.length - 1]; }
-function uploadCalls() { return FakeXHR.instances.filter((x) => x.url.indexOf("/storage/v1/object/product-images/") !== -1); }
+/* storage writes go to /storage/v1/object/<bucket>/<folder>/… (bucket "byleilah") */
+function uploadCalls() { return FakeXHR.instances.filter((x) => x.url.indexOf("/storage/v1/object/byleilah/product-images/") !== -1); }
 function respondAll() {
   uploadCalls().filter((x) => !x.responded).forEach((x) => { x.responded = true; x.respond(); });
 }
@@ -266,7 +274,7 @@ if (editBtn) {
   pending2 = [f4];
   input2.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
   await sleep(20);
-  const ups = uploadCalls().filter((x) => x.url.indexOf("/storage/v1/object/product-images/") !== -1);
+  const ups = uploadCalls().filter((x) => x.url.indexOf("/storage/v1/object/byleilah/product-images/") !== -1);
   const last = ups[ups.length - 1];
   t("existing-product upload uses the real product id (not new-)", !!last && last.url.indexOf("product-images/new-") === -1);
   if (last) last.respond();

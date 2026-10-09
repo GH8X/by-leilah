@@ -94,7 +94,7 @@
     "footer.contact": "Contact", "proof.title": "Preuve de paiement", "shop.empty": "Aucun résultat",
     "baridi.storeName": "Nom du magasin", "baridi.paymentInfo": "Informations de paiement", "baridi.account": "Compte / RIP",
     "baridi.phone": "Téléphone", "cta.freeShippingReached": "Livraison offerte à partir de", "nav.pajamas": "Pyjamas",
-    "nav.clothing": "Vêtements", "nav.shoes": "Chaussures", "nav.handbags": "Sacs"
+    "nav.clothing": "Vêtements", "nav.pantalons": "Pantalons", "nav.shoes": "Chaussures", "nav.handbags": "Sacs"
   };
   function t(k) { return T[k] !== undefined ? T[k] : k; }
 

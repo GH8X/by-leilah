@@ -197,9 +197,14 @@
     .cat-tile{grid-row:span 1}
     .c-pajamas{grid-column:span 7}
     .c-clothing{grid-column:span 5}
+    .c-pantalons{grid-column:span 12}
     .c-shoes{grid-column:span 4}
     .c-looks{grid-column:span 4}
     .c-bags{grid-column:span 4}
+  }
+
+  @media(min-width:1080px) and (max-width:1360px){
+    nav.primary{gap:1.05rem}
   }
 
   /* ============ PRODUCT GRID ============ */
@@ -427,6 +432,7 @@
         <a href="#featured" data-i18n="nav.newIn">Nouveautés</a>
         <a href="shop.html?cat=pajamas" data-i18n="nav.pajamas">Pyjamas</a>
         <a href="shop.html?cat=clothing" data-i18n="nav.clothing">Vêtements</a>
+        <a href="shop.html?cat=pantalons" data-i18n="nav.pantalons">Pantalons</a>
         <a href="shop.html?cat=shoes" data-i18n="nav.shoes">Chaussures</a>
         <a href="#look" data-i18n="nav.completeLooks">Looks complets</a>
         <a href="#lookbook" data-i18n="nav.lookbook">Lookbook</a>
@@ -463,6 +469,7 @@
     <a href="#top" onclick="closeMenu()" data-i18n="nav.newIn">Nouveautés</a>
     <a href="shop.html?cat=pajamas" data-i18n="nav.pajamas">Pyjamas</a>
     <a href="shop.html?cat=clothing" data-i18n="nav.clothing">Vêtements</a>
+    <a href="shop.html?cat=pantalons" data-i18n="nav.pantalons">Pantalons</a>
     <a href="shop.html?cat=shoes" data-i18n="nav.shoes">Chaussures</a>
     <a href="shop.html?cat=handbags" data-i18n="nav.handbags">Sacs</a>
     <a href="#" id="menu-contact" onclick="showContentPage('contact');closeMenu()">Contactez-nous</a>
@@ -502,7 +509,7 @@
       <p class="eyebrow reveal" data-i18n="cat.eyebrow">Collections</p>
       <h2 class="reveal" data-i18n="cat.title">L'univers de by Leïlah</h2>
     </div>
-    <p class="sub reveal" data-i18n="cat.sub">Cinq territoires, une même idée de l'élégance.</p>
+    <p class="sub reveal" data-i18n="cat.sub">Six territoires, une même idée de l'élégance.</p>
   </div>
   <div class="cat-grid">
     <a class="cat-tile c-pajamas reveal" href="shop.html?cat=pajamas">
@@ -522,6 +529,16 @@
         <p class="eyebrow" data-i18n="nav.clothing">Vêtements</p>
         <h3 data-i18n="nav.clothing">Vêtements</h3>
         <p data-i18n="catTag.clothing">Les essentiels de votre jour</p>
+        <span class="link-underline" data-i18n="cta.explore">Explorer</span>
+      </div>
+    </a>
+    <a class="cat-tile c-pantalons reveal" href="shop.html?cat=pantalons">
+      <div class="ph t-sand" data-ph data-seed="cat-pantalons" data-tone="sand" data-mono="P"></div>
+      <div class="scrim"></div>
+      <div class="cat-body">
+        <p class="eyebrow" data-i18n="nav.pantalons">Pantalons</p>
+        <h3 data-i18n="nav.pantalons">Pantalons</h3>
+        <p data-i18n="catTag.pantalons">Des coupes élégantes, du matin au soir</p>
         <span class="link-underline" data-i18n="cta.explore">Explorer</span>
       </div>
     </a>
@@ -757,6 +774,7 @@
         <li><a href="shop.html" data-i18n="shop.all">Tous les produits</a></li>
         <li><a href="shop.html?cat=pajamas" data-i18n="nav.pajamas">Pyjamas</a></li>
         <li><a href="shop.html?cat=clothing" data-i18n="nav.clothing">Vêtements</a></li>
+        <li><a href="shop.html?cat=pantalons" data-i18n="nav.pantalons">Pantalons</a></li>
         <li><a href="shop.html?cat=shoes" data-i18n="nav.shoes">Chaussures</a></li>
         <li><a href="shop.html?cat=handbags" data-i18n="nav.handbags">Sacs</a></li>
         <li><a href="index.html#lookbook" data-i18n="nav.lookbook">Lookbook</a></li>
@@ -1341,13 +1359,14 @@
     en:{
       "ann.1":"Delivery available across Algeria","ann.2":"Cash on delivery available","ann.3":"Free returns within 14 days",
       "ann.1b":"Delivery available across Algeria","ann.2b":"Cash on delivery available","ann.3b":"Free returns within 14 days",
-      "nav.newIn":"New In","nav.pajamas":"Pajamas","nav.clothing":"Clothing","nav.shoes":"Shoes","nav.handbags":"Handbags",
+      "nav.newIn":"New In","nav.pajamas":"Pajamas","nav.clothing":"Clothing","nav.pantalons":"Trousers","nav.shoes":"Shoes","nav.handbags":"Handbags",
       "nav.completeLooks":"Complete Looks","nav.lookbook":"Lookbook","nav.about":"The house",
       "cat.eyebrow":"Collections","hero.headline":"Made for your softest moments.",
       "hero.sub":"Silk pajamas, everyday essentials and composed silhouettes — designed in Algeria, worn everywhere.",
       "cta.shopCollection":"Shop the collection","cta.discover":"Discover by Leïlah","hero.scroll":"Scroll",
-      "cat.title":"The world of by Leïlah","cat.sub":"Five territories, one idea of elegance.","cta.explore":"Explore",
+      "cat.title":"The world of by Leïlah","cat.sub":"Six territories, one idea of elegance.","cta.explore":"Explore",
       "catTag.pajamas":"Silk that carries your nights","catTag.clothing":"Essentials for your day",
+      "catTag.pantalons":"Elegant cuts, from morning to evening",
       "catTag.shoes":"Every step, with grace","catTag.looks":"Silhouettes, composed","catTag.handbags":"The everyday companion",
       "featured.eyebrow":"The New Edit","featured.title":"The new edit","featured.sub":"Pieces designed for your everyday elegance.",
       "cta.viewAll":"View all","product.bestSeller":"Best seller","product.new":"New","product.limited":"Limited","product.sale":"Sale",
@@ -1375,13 +1394,14 @@
     ar:{
       "ann.1":"التوصيل متوفر عبر كامل التراب الجزائري","ann.2":"الدفع عند الاستلام متاح","ann.3":"إرجاع مجاني خلال 14 يومًا",
       "ann.1b":"التوصيل متوفر عبر كامل التراب الجزائري","ann.2b":"الدفع عند الاستلام متاح","ann.3b":"إرجاع مجاني خلال 14 يومًا",
-      "nav.newIn":"وصل حديثًا","nav.pajamas":"بيجامات","nav.clothing":"ملابس","nav.shoes":"أحذية","nav.handbags":"حقائب",
+      "nav.newIn":"وصل حديثًا","nav.pajamas":"بيجامات","nav.clothing":"ملابس","nav.pantalons":"بناطيل","nav.shoes":"أحذية","nav.handbags":"حقائب",
       "nav.completeLooks":"إطلالات كاملة","nav.lookbook":"دفتر الإطلالات","nav.about":"الدار",
       "cat.eyebrow":"المجموعات","hero.headline":"صُنعت من أجل أرقّ لحظاتك.",
       "hero.sub":"بيجامات حريرية وأساسيات يومية وإطلالات متكاملة — صُممت في الجزائر، وتُرتدى في كل مكان.",
       "cta.shopCollection":"اكتشفي المجموعة","cta.discover":"اكتشفي by Leïlah","hero.scroll":"مرّري للأسفل",
-      "cat.title":"عالم by Leïlah","cat.sub":"خمسة عوالم، وفكرة واحدة عن الأناقة.","cta.explore":"استكشفي",
+      "cat.title":"عالم by Leïlah","cat.sub":"ستة عوالم، وفكرة واحدة عن الأناقة.","cta.explore":"استكشفي",
       "catTag.pajamas":"الحرير الذي يرافق لياليك","catTag.clothing":"أساسيات ليومكِ",
+      "catTag.pantalons":"قصات أنيقة، من الصباح إلى المساء",
       "catTag.shoes":"كل خطوة، بأناقة","catTag.looks":"إطلالات متكاملة","catTag.handbags":"رفيقة كل يوم",
       "featured.eyebrow":"التشكيلة الجديدة","featured.title":"تشكيلة هذا الموسم","featured.sub":"قطع مصمّمة لأناقتك اليومية.",
       "cta.viewAll":"عرض الكل","product.bestSeller":"الأكثر مبيعًا","product.new":"جديد","product.limited":"محدود","product.sale":"تخفيض",

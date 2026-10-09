@@ -46,6 +46,7 @@
   var CATS = [
     { key: "pajamas", label: "Pyjamas" },
     { key: "clothing", label: "Vêtements" },
+    { key: "pantalons", label: "Pantalons" },
     { key: "shoes", label: "Chaussures" },
     { key: "handbags", label: "Sacs" },
   ];
@@ -155,7 +156,7 @@
   }
 
   /* ============================================================
-   * 5. Seed catalogue (33 products — same ids/prices as before)
+   * 5. Seed catalogue (39 products — same ids/prices as before)
    * ============================================================ */
   var COLORS = {
     champagne: { hex: "#E7D3B8", label: "Champagne", tone: "champagne" },
@@ -183,6 +184,7 @@
   }
   function sizeNamesFor(cat) {
     if (cat === "shoes") return ["36", "37", "38", "39", "40", "41"];
+    if (cat === "pantalons") return ["36", "38", "40", "42", "44"];
     if (cat === "handbags") return ["Unique"];
     return ["XS", "S", "M", "L", "XL"];
   }
@@ -236,6 +238,12 @@
     ["bl-031", "jour-everyday-tote", "Jour", "handbags", 14900, 11, null, ["sable", "taupe", "espresso"], "Tote en cuir souple, poche intérieure zippée — pensé pour toutes vos journées."],
     ["bl-032", "ecru-crescent-bag", "Écru", "handbags", 15900, 10, null, ["nude", "ivoire", "mocha"], "Sac croissant en cuir écru — une courbe douce sous le bras."],
     ["bl-033", "nomade-bucket-bag", "Nomade", "handbags", 13900, 13, null, ["mocha", "camel", "noir"], "Sac seau à cordon — l'appel du large, sans quitter la ville."],
+    ["bl-034", "palazzo-wide-trousers", "Palazzo", "pantalons", 11900, 20, "Nouveau", ["nude", "taupe", "noir"], "Pantalon palazzo taille haute au tombé fluide — une ligne longue qui allonge la silhouette."],
+    ["bl-035", "taille-haute-droit", "Taille Haute", "pantalons", 10900, 24, null, ["noir", "espresso", "sable"], "Pantalon droit taille haute à ceinture fine — la coupe nette du quotidien."],
+    ["bl-036", "cigarette-satin", "Cigarette", "pantalons", 9900, 18, null, ["champagne", "perle", "rose"], "Pantalon cigarette en satin, cheville affinée — l'élégance discrète du soir."],
+    ["bl-037", "lin-doux-large", "Lin Doux", "pantalons", 8900, 22, null, ["ivoire", "sauge", "mocha"], "Pantalon large en lin lavé, taille élastiquée — la fraîcheur des jours doux."],
+    ["bl-038", "leila-tailleur", "Leïla Tailleur", "pantalons", 12900, 14, "Best-seller", ["espresso", "noir", "camel"], "Pantalon tailleur à pinces, jambe droite — la signature structurée by Leïlah."],
+    ["bl-039", "nuit-blanche-satin", "Nuit Blanche", "pantalons", 13900, 0, null, ["noir", "midnight"], "Pantalon fluide à taille haute, tombé soyeux — pour les soirées qui s'étirent."],
   ];
 
   function buildSeedProducts() {
