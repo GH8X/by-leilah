@@ -29,7 +29,7 @@
   var AUTH_KEY = "bl.auth.v1";
   var HERO_OBJECT = (BL.HERO_BUCKET || "byleilah") + "/" + (BL.HERO_PATH || "hero/home-hero.mp4");
   var IMG_FOLDER = "product-images";
-  var CLOUD_KEYS = ["contact", "about", "newSection", "comingSoon", "socials", "theme"];
+  var CLOUD_KEYS = ["contact", "about", "newSection", "comingSoon", "catStatus", "socials", "theme"];
 
   function cfg() {
     var c = BL.supabaseCfg ? BL.supabaseCfg() : { url: "", anonKey: "" };

@@ -79,6 +79,9 @@
     </div>
     <p class="shop-count" id="shop-count"></p>
 
+    <!-- shown instead of the grid when the category status is "Coming Soon" (admin setting) -->
+    <section class="soon" id="shop-soon" hidden></section>
+
     <div class="prod-grid" id="shop-grid" style="margin-top:18px"></div>
     <div class="empty-state" id="shop-empty" style="display:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
@@ -152,8 +155,52 @@
       return '<a class="cat-pill' + (state.cat === c.key ? " on" : "") + '" href="shop.html' + (c.key === "all" ? "" : "?cat=" + c.key) + '">' + c.label + "</a>";
     }).join("");
   }
+  /* ---------- Coming Soon (category display status, set in the admin) ---------- */
+  var SOON_TONES = { pajamas: "champagne", clothing: "taupe", pantalons: "sand", shoes: "espresso", handbags: "nude" };
+  function soonHTML(cat) {
+    var tone = SOON_TONES[cat] || "champagne";
+    var label = BL.catLabel(cat);
+    return '<div class="soon-art"><div class="ph t-' + tone + '" data-ph data-seed="soon-' + BL.esc(cat) + '" data-tone="' + tone + '" data-mono="' + BL.esc(label.charAt(0).toUpperCase()) + '"></div>' +
+      '<span class="soon-shine" aria-hidden="true"></span></div>' +
+      '<div class="soon-body">' +
+      '<p class="eyebrow">by Leïlah — ' + BL.esc(label) + '</p>' +
+      '<h2 class="soon-title">Coming <em>Soon</em></h2>' +
+      '<div class="soon-rule"></div>' +
+      '<p class="soon-msg">Cette catégorie arrive bientôt. Restez connectés pour découvrir notre nouvelle collection.</p>' +
+      '<div class="soon-cta"><a class="btn btn-primary" href="shop.html">Découvrir la boutique</a>' +
+      '<a class="link-underline" href="index.html#featured">Voir les nouveautés</a></div>' +
+      '<p class="soon-note">Nouvelle collection — très bientôt</p></div>';
+  }
+  var soonRenderedCat = null;
+  function renderSoon(soon) {
+    var box = el("shop-soon");
+    if (!box) return;
+    if (soon && soonRenderedCat !== state.cat) {
+      box.innerHTML = soonHTML(state.cat);
+      BL.paintPH(box);
+      soonRenderedCat = state.cat;
+    }
+    var shouldHide = !soon;
+    if (box.hidden !== shouldHide) box.hidden = shouldHide;
+  }
   function applyFilters() {
-    var grid = el("shop-grid"), empty = el("shop-empty");
+    var grid = el("shop-grid"), empty = el("shop-empty"), count = el("shop-count");
+    /* Coming Soon: the category page keeps its title, pills and navigation but
+     * shows the elegant Coming Soon block — never the grid, the count or the
+     * "Aucun produit" empty state. */
+    var soon = state.cat !== "all" && BL.catIsSoon(state.cat);
+    renderSoon(soon);
+    var search = document.querySelector(".shop-search");
+    if (search) search.style.display = soon ? "none" : "";
+    if (soon) {
+      grid.innerHTML = "";
+      grid.style.display = "none";
+      count.style.display = "none";
+      empty.style.display = "none";
+      return;
+    }
+    grid.style.display = "";
+    count.style.display = "";
     var q = state.q.trim().toLowerCase();
     var list = BL.getProducts().filter(function (p) {
       if (state.cat !== "all" && p.cat !== state.cat) return false;

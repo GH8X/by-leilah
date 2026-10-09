@@ -392,5 +392,31 @@ console.log("Pantalons category:");
   t("trousers persist across a reload (same browser)", BL2.getProduct("bl-034").cat === "pantalons" && BL2.sizeStock(BL2.getProduct("bl-034"), "40") === before40 - 2);
 }
 
+/* ======================================================================
+ * 13. Category display status (Coming Soon) — persisted public setting
+ * ====================================================================== */
+console.log("Category display status:");
+{
+  const ls = makeLS(), BL = loadBL(ls);
+  t("every category defaults to active", BL.CATS.every((c) => BL.catStatus(c.key) === "active" && BL.catIsSoon(c.key) === false));
+  t("the 'all' pseudo-category is never Coming Soon", BL.catIsSoon("all") === false && BL.catStatus("all") === "active");
+  t("setCatStatus('pantalons','soon') applies", BL.setCatStatus("pantalons", "soon") === "soon" && BL.catIsSoon("pantalons") === true);
+  t("only the selected category changes", ["pajamas", "clothing", "shoes", "handbags"].every((k) => BL.catStatus(k) === "active"));
+  t("unknown categories are refused", BL.setCatStatus("nope", "soon") === "active" && !(BL.settings().catStatus && ("nope" in BL.settings().catStatus)));
+  const persisted = JSON.parse(ls.getItem("bl.settings.v1"));
+  t("status persisted to storage (survives a refresh)", !!persisted.catStatus && persisted.catStatus.pantalons === "soon");
+  const BL2 = loadBL(ls);
+  t("status restored on a fresh load", BL2.catIsSoon("pantalons") === true && BL2.catStatus("pajamas") === "active");
+  t("switching back to active restores the listing", BL2.setCatStatus("pantalons", "active") === "active" && BL2.catIsSoon("pantalons") === false);
+  const ls3 = makeLS();
+  ls3.setItem("bl.settings.v1", JSON.stringify({ catStatus: { shoes: "whatever", handbags: null } }));
+  const BL3 = loadBL(ls3);
+  t("unknown stored values fall back to active", BL3.catStatus("shoes") === "active" && BL3.catStatus("handbags") === "active");
+  const ls4 = makeLS();
+  ls4.setItem("bl.settings.v1", JSON.stringify({ catStatus: { shoes: "soon" } }));
+  const BL4 = loadBL(ls4);
+  t("a Coming Soon category is remembered (only that one)", BL4.catIsSoon("shoes") === true && BL4.CATS.filter((c) => BL4.catIsSoon(c.key)).length === 1);
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) { console.log("Failures:\n - " + failures.join("\n - ")); process.exit(1); }

@@ -522,6 +522,21 @@
     h += '<div class="fld"><span class="lbl">Description</span><input class="inp" id="ns-desc" type="text" value="' + esc(ns.description || '') + '" /></div>';
     h += '<div class="fld full"><span class="lbl">Informations supplémentaires</span><textarea class="inp" id="ns-additional" rows="2">' + esc(ns.additional || '') + '</textarea></div>';
     h += '</div><button class="btn-x" data-act="saveNewSection" style="margin-top:12px">Enregistrer Nouveautés</button></section>';
+    /* Category display status — Active / Coming Soon (drives the storefront) */
+    var catSt = s.catStatus || {};
+    h += '<section class="set-block"><h2>Statut des catégories — Active / Coming Soon</h2>';
+    h += '<p class="video-note">Choisissez ce que le visiteur voit sur la page d’une catégorie : <b>Active</b> affiche les produits normalement, <b>Bientôt</b> affiche une page « Coming Soon » à la place — sans jamais montrer « Aucun produit ». La catégorie reste visible dans les menus, les filtres et la boutique. L’enregistrement est immédiat et synchronisé avec Supabase (visible sur tous les appareils).</p>';
+    h += '<div class="f-grid two" style="margin-top:12px">';
+    for (var ci = 0; ci < BL.CATS.length; ci++) {
+      var cc = BL.CATS[ci];
+      var soon = catSt[cc.key] === "soon";
+      h += '<div class="fld"><span class="lbl">' + esc(cc.label) + '</span>';
+      h += '<select class="inp" data-act="catStatus" data-cat="' + cc.key + '">';
+      h += '<option value="active"' + (soon ? '' : ' selected') + '>Active — produits affichés</option>';
+      h += '<option value="soon"' + (soon ? ' selected' : '') + '>Bientôt — Coming Soon</option>';
+      h += '</select></div>';
+    }
+    h += '</div></section>';
     /* Coming Soon */
     h += '<section class="set-block"><h2>Bientôt disponible</h2><div class="f-grid">';
     h += '<div class="fld"><span class="lbl">Titre</span><input class="inp" id="cs-title" type="text" value="' + esc(cs.title || '') + '" /></div>';
@@ -1349,6 +1364,18 @@
     if (!act) return;
     var type = act.getAttribute("data-act");
     var id = act.getAttribute("data-id");
+    if (type === "catStatus") {
+      /* Category display status: only the targeted category is written; the
+       * others keep their value. BL.saveSettings is patched to push the whole
+       * public settings object to Supabase when an admin session is active. */
+      var ck = act.getAttribute("data-cat") || "";
+      var next = act.value === "soon" ? "soon" : "active";
+      var applied = BL.setCatStatus(ck, next);
+      toast(applied === "soon"
+        ? BL.catLabel(ck) + " : Coming Soon — cette catégorie affiche « Coming Soon » sur la boutique."
+        : BL.catLabel(ck) + " : Active — les produits de cette catégorie sont de nouveau affichés.", "ok");
+      return;
+    }
     if (type === "status") {
       var o = BL.findOrder(id);
       if (!o) return;

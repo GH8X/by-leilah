@@ -65,7 +65,7 @@ function makeFetch(calls) {
       { id: "bl-draft", slug: "draft", name: "Draft Cache", description: "d", category: "clothing", price: 100, old_price: null, badge: null, active: false, colors: [], images: [], tone: "espresso", mono: "D", created_at: "2026-01-02T00:00:00Z" },
     ],
     sizes: [{ product_id: "bl-x", name: "M", stock: 2 }, { product_id: "bl-x", name: "S", stock: 1 }],
-    settings: [{ id: 1, data: { contact: { title: "Contact cloud" }, about: { title: "À propos cloud" } } }],
+    settings: [{ id: 1, data: { contact: { title: "Contact cloud" }, about: { title: "À propos cloud" }, catStatus: { pantalons: "soon" } } }],
   };
   let sizeSeq = 0;
   return async (url, init) => {
@@ -157,6 +157,7 @@ console.log("Supabase client (cloud.js):");
   const st = BL.cloud.status();
   t("boot status ready after sync", st.ready === true && st.ok === true);
   t("cloud settings merged into mirror", BL.getContact().title === "Contact cloud" && BL.getAbout().title === "À propos cloud");
+  t("category display status merged from website_settings", BL.catIsSoon("pantalons") === true && BL.catStatus("pajamas") === "active");
 }
 
 /* checkout RPC */
@@ -197,6 +198,18 @@ console.log("Supabase client (cloud.js):");
   const lastSize = calls.filter((c) => c.url.includes("/rest/v1/product_sizes") && c.method === "POST").pop();
   t("trousers written with category=pantalons in the products table", !!lastPost && lastPost.body.id === "bl-p1" && lastPost.body.category === "pantalons");
   t("trousers reuse the existing columns (images/tone/sizes)", !!lastPost && lastPost.body.images.length === 1 && lastPost.body.tone === "nude" && !!lastSize && lastSize.body.name === "40" && lastSize.body.stock === 2);
+}
+
+/* category display status is written with the SAME single settings row */
+{
+  const calls = [];
+  const { BL } = loadCloud(calls);
+  await BL.cloud.signIn("admin@byleilah.dz", "secret");
+  BL.setCatStatus("handbags", "soon");
+  await BL.cloud.admin.writeSettings();
+  const w = calls.filter((c) => c.url.includes("/rest/v1/website_settings") && (c.method === "PATCH" || c.method === "POST")).pop();
+  t("admin write persists catStatus in website_settings", !!w && !!w.body && !!w.body.data.catStatus && w.body.data.catStatus.handbags === "soon");
+  t("only the changed category is in the payload", !!w && w.body.data.catStatus.pantalons === undefined && Object.keys(w.body.data.catStatus).length === 1);
 }
 
 /* settings write requires an admin session (anonymous storefront never writes) */

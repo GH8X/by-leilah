@@ -54,6 +54,10 @@
     for (var i = 0; i < CATS.length; i++) if (CATS[i].key === key) return CATS[i].label;
     return key;
   }
+  function isCat(key) {
+    for (var i = 0; i < CATS.length; i++) if (CATS[i].key === key) return true;
+    return false;
+  }
 
   var WILAYAS = [
     { code: 1, name: "Adrar" }, { code: 2, name: "Chlef" }, { code: 3, name: "Laghouat" },
@@ -387,6 +391,11 @@
         comingSoon: { title: "Bientôt disponible", description: "Restez à l'écoute pour nos prochaines collections",
           items: [], additional: ""
         },
+        /* Category display status — per category: "active" (normal listing) or
+         * "soon" (the storefront shows a Coming Soon section instead of the
+         * product grid). Missing keys mean "active". Public data: it lives in
+         * the same website_settings row, no extra table. */
+        catStatus: {},
         socials: [
           { name: "Instagram", url: "https://www.instagram.com/byleilah.off", icon: "instagram" },
           { name: "TikTok", url: "https://www.tiktok.com/@byleilah0", icon: "tiktok" }
@@ -413,6 +422,7 @@
       content: "by Leïlah est une marque de mode féminine née en Algérie.", images: [], additional: "" };
     if (!s.newSection) s.newSection = { title: "Nouveautés", description: "Découvrez nos dernières pièces", productIds: [], additional: "" };
     if (!s.comingSoon) s.comingSoon = { title: "Bientôt disponible", description: "", items: [], additional: "" };
+    if (!s.catStatus || typeof s.catStatus !== "object") s.catStatus = {};
     if (!s.socials) s.socials = [
       { name: "Instagram", url: "https://www.instagram.com/byleilah.off", icon: "instagram" },
       { name: "TikTok", url: "https://www.tiktok.com/@byleilah0", icon: "tiktok" }
@@ -424,6 +434,38 @@
     if (env) return Object.assign({}, s, { pin: env });
     return s;
   }
+  /* ---------- category display status ----------
+   * "active" (default) → the category page lists its products.
+   * "soon"             → the category page shows the Coming Soon section.
+   * Stored in the public settings object, so it persists in localStorage and in
+   * the existing website_settings row (admin-write protected by RLS). */
+  function catStatuses() {
+    var s = settings();
+    return (s && s.catStatus && typeof s.catStatus === "object") ? s.catStatus : {};
+  }
+  function catStatus(key) {
+    if (!isCat(key)) return "active";
+    return catStatuses()[key] === "soon" ? "soon" : "active";
+  }
+  function catIsSoon(key) { return catStatus(key) === "soon"; }
+  /* Save public settings through the EXPORTED saver when available: the admin
+   * console wraps BL.saveSettings so every public settings change is also
+   * pushed to Supabase (website_settings). Falls back to the internal write in
+   * contexts where the export is not set up yet. */
+  function savePublicSettings(s) {
+    var save = (typeof window !== "undefined" && window.BL && window.BL.saveSettings) ? window.BL.saveSettings : saveSettings;
+    return save(s);
+  }
+  function setCatStatus(key, status) {
+    if (!isCat(key)) return "active";
+    var s = settings();
+    if (!s.catStatus || typeof s.catStatus !== "object") s.catStatus = {};
+    /* only the targeted category is touched — the others keep their value */
+    s.catStatus[key] = status === "soon" ? "soon" : "active";
+    savePublicSettings(s);
+    return s.catStatus[key];
+  }
+
   function saveSettings(obj) {
     /* Prefer the caller's mutated object. settings() may return a shallow copy
      * (when VITE_ADMIN_PIN is active), so mutations on it would otherwise be
@@ -1095,7 +1137,7 @@
   function applyCloudSettings(cloudData) {
     if (!cloudData || typeof cloudData !== "object") return false;
     var s = settings();
-    var keys = ["contact", "about", "newSection", "comingSoon", "socials", "theme"];
+    var keys = ["contact", "about", "newSection", "comingSoon", "catStatus", "socials", "theme"];
     for (var i = 0; i < keys.length; i++) {
       if (cloudData[keys[i]] !== undefined) s[keys[i]] = cloudData[keys[i]];
     }
@@ -1144,6 +1186,7 @@
     WILAYAS: WILAYAS, COMMUNES: COMMUNES, wilayaName: wilayaName, feeFor: feeFor,
     TONES: TONES, toneExists: toneExists, silkSVG: silkSVG, paintPH: paintPH,
     settings: settings, saveSettings: saveSettings,
+    catStatus: catStatus, catIsSoon: catIsSoon, setCatStatus: setCatStatus,
     envAdminPin: envAdminPin, adminPinInfo: adminPinInfo,
     db: db, saveDB: saveDB,
     getProducts: getProducts, getProduct: getProduct,
